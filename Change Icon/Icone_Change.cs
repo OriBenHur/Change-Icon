@@ -20,7 +20,7 @@ namespace Change_Icon
         {
             Folder_Error.Clear();
             FolderSelectDialog folder = new FolderSelectDialog();
-            
+
             bool result = folder.ShowDialog();
             if (result)
             {
@@ -32,6 +32,7 @@ namespace Change_Icon
         static private Image image = null;
         private void Icon_button_Click(object sender, EventArgs e)
         {
+            Folder_Error.Clear();
             if (Folder_textBox.Text == "")
             {
                 Folder_Error.SetIconPadding(Icone_textBox, 100);
@@ -89,52 +90,60 @@ namespace Change_Icon
 
         private void Set_Click(object sender, EventArgs e)
         {
-            string path = Folder_textBox.Text + "\\desktop.ini";
-            string iconS = "";
-            string sourceFile = "";
-            if (Folder_textBox.Text.Length > 0)
+            Folder_Error.Clear();
+            if (Icone_textBox.Text == "")
             {
-                if (File.Exists(path))
+                Folder_Error.SetIconPadding(Set,0);
+                Folder_Error.SetError(Set, "You must selcet icon first");
+            }
+            else {
+                string path = Folder_textBox.Text + "\\desktop.ini";
+                string iconS = "";
+                string sourceFile = "";
+                if (Folder_textBox.Text.Length > 0)
                 {
-                    File.Delete(path);
-                }
+                    if (File.Exists(path))
+                    {
+                        File.Delete(path);
+                    }
 
-                if (File.Exists(Folder_textBox.Text + "\\" + Path.GetFileNameWithoutExtension(Icone_textBox.Text) + ".ico"))
-                {
-                    iconS = Folder_textBox.Text + "\\" + Path.GetFileNameWithoutExtension(Icone_textBox.Text) + ".ico";
-                }
+                    if (File.Exists(Folder_textBox.Text + "\\" + Path.GetFileNameWithoutExtension(Icone_textBox.Text) + ".ico"))
+                    {
+                        iconS = Folder_textBox.Text + "\\" + Path.GetFileNameWithoutExtension(Icone_textBox.Text) + ".ico";
+                    }
 
-                else
-                {
-                    string tmpSorce = Path.GetTempPath() + Path.GetFileNameWithoutExtension(Icone_textBox.Text) + ".ico";
-                    if (File.Exists(tmpSorce)) sourceFile = tmpSorce;
-                    else sourceFile = Icone_textBox.Text;
-                    iconS = Folder_textBox.Text + "\\" + Path.GetFileName(sourceFile);
-                    File.Copy(sourceFile, iconS, true);
-                }
+                    else
+                    {
+                        string tmpSorce = Path.GetTempPath() + Path.GetFileNameWithoutExtension(Icone_textBox.Text) + ".ico";
+                        if (File.Exists(tmpSorce)) sourceFile = tmpSorce;
+                        else sourceFile = Icone_textBox.Text;
+                        iconS = Folder_textBox.Text + "\\" + Path.GetFileName(sourceFile);
+                        File.Copy(sourceFile, iconS, true);
+                    }
 
-                if (File.Exists(iconS))
-                {
+                    if (File.Exists(iconS))
+                    {
 
-                    FolderIcon myFolderIcon = new FolderIcon(Folder_textBox.Text);
-                    myFolderIcon.CreateFolderIcon(iconS);
-                    myFolderIcon = null;
-                    File.SetAttributes(iconS, File.GetAttributes(iconS) | FileAttributes.Hidden);
-                    File.SetAttributes(iconS, File.GetAttributes(iconS) | FileAttributes.System);
-                    uint FCSM_ICONFILE = 0x00000010;
-                    uint FCS_READ = 0x00000001;
-                    uint FCS_FORCEWRITE = 0x00000002;
-                    uint FCS_WRITE = FCS_READ | FCS_FORCEWRITE;
-                    LPSHFOLDERCUSTOMSETTINGS FolderSettings = new LPSHFOLDERCUSTOMSETTINGS();
-                    FolderSettings.dwSize = (uint)iconS.Length;
-                    FolderSettings.dwMask = FCSM_ICONFILE;
-                    FolderSettings.pszIconFile = Path.GetFileName(iconS);
-                    FolderSettings.cchIconFile = 1;
-                    FolderSettings.iIconIndex = 1;
-                    FolderSettings.pszInfoTip = "bla lba";
-                    uint HRESULT = SHGetSetFolderCustomSettings(ref FolderSettings, Folder_textBox.Text, FCS_FORCEWRITE);
-                    MessageBox.Show("Done", "OK");
-                    Dispose();
+                        FolderIcon myFolderIcon = new FolderIcon(Folder_textBox.Text);
+                        myFolderIcon.CreateFolderIcon(iconS);
+                        myFolderIcon = null;
+                        File.SetAttributes(iconS, File.GetAttributes(iconS) | FileAttributes.Hidden);
+                        File.SetAttributes(iconS, File.GetAttributes(iconS) | FileAttributes.System);
+                        uint FCSM_ICONFILE = 0x00000010;
+                        uint FCS_READ = 0x00000001;
+                        uint FCS_FORCEWRITE = 0x00000002;
+                        uint FCS_WRITE = FCS_READ | FCS_FORCEWRITE;
+                        LPSHFOLDERCUSTOMSETTINGS FolderSettings = new LPSHFOLDERCUSTOMSETTINGS();
+                        FolderSettings.dwSize = (uint)iconS.Length;
+                        FolderSettings.dwMask = FCSM_ICONFILE;
+                        FolderSettings.pszIconFile = Path.GetFileName(iconS);
+                        FolderSettings.cchIconFile = 0;
+                        FolderSettings.iIconIndex = 0;
+
+                        uint HRESULT = SHGetSetFolderCustomSettings(ref FolderSettings, Folder_textBox.Text, FCS_FORCEWRITE);
+                        MessageBox.Show("Done", "OK");
+                        Dispose();
+                    }
                 }
             }
         }
@@ -149,6 +158,36 @@ namespace Change_Icon
             GC.Collect();
             if (File.Exists(file)) File.Delete(file);
             if (File.Exists(ico)) File.Delete(ico);
+        }
+
+        private void Reset_Folder_Click(object sender, EventArgs e)
+        {
+            Folder_Error.Clear();
+            if (Folder_textBox.Text == "")
+            {                
+                Folder_Error.SetIconPadding(Reset_Folder, -90);
+                Folder_Error.SetError(Reset_Folder, "You must selcet folder first");
+            }
+            else
+            {
+                string[] filePaths = Directory.GetFiles(Folder_textBox.Text);
+                bool find = false;
+                foreach (string filePath in filePaths)
+                {
+
+                    if (Path.GetExtension(filePath).Equals(".ini") || Path.GetExtension(filePath).Equals(".ico"))
+                    {
+                        find = true;
+                        File.Delete(filePath);
+                    }
+                }
+                if (find)
+                {
+                    MessageBox.Show("Folder reset to default", "OK");
+                    find = false;
+                }
+                else MessageBox.Show("Folder is already at default", "GeneralMessage");
+            }
         }
     }
 }

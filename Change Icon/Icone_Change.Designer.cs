@@ -39,6 +39,7 @@
             this.Set = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.Folder_Error = new System.Windows.Forms.ErrorProvider(this.components);
+            this.Reset_Folder = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.Folder_Error)).BeginInit();
             this.SuspendLayout();
@@ -97,7 +98,7 @@
             // 
             // Set
             // 
-            this.Set.Location = new System.Drawing.Point(270, 193);
+            this.Set.Location = new System.Drawing.Point(275, 193);
             this.Set.Name = "Set";
             this.Set.Size = new System.Drawing.Size(75, 23);
             this.Set.TabIndex = 7;
@@ -118,6 +119,16 @@
             // 
             this.Folder_Error.ContainerControl = this;
             // 
+            // Reset_Folder
+            // 
+            this.Reset_Folder.Location = new System.Drawing.Point(193, 193);
+            this.Reset_Folder.Name = "Reset_Folder";
+            this.Reset_Folder.Size = new System.Drawing.Size(75, 23);
+            this.Reset_Folder.TabIndex = 9;
+            this.Reset_Folder.Text = "Reset Folder";
+            this.Reset_Folder.UseVisualStyleBackColor = true;
+            this.Reset_Folder.Click += new System.EventHandler(this.Reset_Folder_Click);
+            // 
             // Icon_Change
             // 
             this.AccessibleRole = System.Windows.Forms.AccessibleRole.Window;
@@ -125,6 +136,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(368, 223);
+            this.Controls.Add(this.Reset_Folder);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.Set);
             this.Controls.Add(this.Icon_button);
@@ -157,6 +169,7 @@
         private System.Windows.Forms.Button Set;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.ErrorProvider Folder_Error;
+        private System.Windows.Forms.Button Reset_Folder;
     }
 }
 
