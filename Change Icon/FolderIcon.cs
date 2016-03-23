@@ -155,7 +155,7 @@ namespace Change_Icon
 
             // Write .ini settings to the desktop.ini file
 
-            IniWriter.WriteValue(".ShellClassInfo", "IconResource", Path.GetFileName(iconFilePath) + "," + iconIndex.ToString(), this.IniPath);
+            IniWriter.WriteValue(".ShellClassInfo", "IconResource","" + "," + iconIndex.ToString(), this.IniPath);
             IniWriter.WriteValue("ViewState", "Mode", "", this.IniPath);
             IniWriter.WriteValue("ViewState", "Vid", "", this.IniPath);
             IniWriter.WriteValue("ViewState", "FolderType", "", this.IniPath);

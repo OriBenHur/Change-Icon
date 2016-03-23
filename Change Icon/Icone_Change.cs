@@ -128,9 +128,10 @@ namespace Change_Icon
                     LPSHFOLDERCUSTOMSETTINGS FolderSettings = new LPSHFOLDERCUSTOMSETTINGS();
                     FolderSettings.dwSize = (uint)iconS.Length;
                     FolderSettings.dwMask = FCSM_ICONFILE;
-                    FolderSettings.pszIconFile = iconS;
-                    FolderSettings.cchIconFile = 0;
-                    FolderSettings.iIconIndex = 0;
+                    FolderSettings.pszIconFile = Path.GetFileName(iconS);
+                    FolderSettings.cchIconFile = 1;
+                    FolderSettings.iIconIndex = 1;
+                    FolderSettings.pszInfoTip = "bla lba";
                     uint HRESULT = SHGetSetFolderCustomSettings(ref FolderSettings, Folder_textBox.Text, FCS_FORCEWRITE);
                     MessageBox.Show("Done", "OK");
                     Dispose();
