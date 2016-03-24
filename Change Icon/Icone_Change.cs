@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using System.IO;
@@ -29,10 +30,18 @@ namespace Change_Icon
             }
 
         }
-        static private Image image = null;
+        private static List<string> pics = new List<string>();
+        public List<string> getMyList
+        {
+            get { return pics; }
+            set { pics = value; } 
+        }
+        //public List<int> PropertyId = new List<int>();
+        //Image image = null;
         private void Icon_button_Click(object sender, EventArgs e)
         {
             Folder_Error.Clear();
+
             if (Folder_textBox.Text == "")
             {
                 Folder_Error.SetIconPadding(Icone_textBox, 100);
@@ -41,24 +50,31 @@ namespace Change_Icon
             else
             {
                 OpenFileDialog icon = new OpenFileDialog();
-                icon.InitialDirectory = Folder_textBox.Text;
-                icon.Filter = "Icon files (*.ico)| *.ico| Image files (*.jpg, *.jpeg,*.png) | *.jpg; *.jpeg;*.png";
+                //icon.InitialDirectory = Icone_textBox.Text;
+                icon.Filter = "Icon files (*.ico)| *.ico|Common image files (*.jpg, *.jpeg, *.png, *.bmp)|*.jpg; *.jpeg; *.png; *.bmp";
                 icon.FilterIndex = 1;
                 icon.RestoreDirectory = false;
                 DialogResult result = icon.ShowDialog();
                 if (result == DialogResult.OK)
                 {
                     string ext = Path.GetExtension(icon.FileName);
-                    if (ext.Equals(".jpg") || ext.Equals(".jpeg") || ext.Equals(".png"))
+                    if (ext.ToLower().Equals(".jpg") || ext.ToLower().Equals(".jpeg") || ext.ToLower().Equals(".png") || ext.ToLower().Equals("*.bmp"))
                     {
                         iconConvert.ConvertToIcon(icon.FileName, Path.GetTempPath() + Path.GetFileNameWithoutExtension(icon.FileName) + ".ico", 256, false);
                     }
-                    string tmpIco = Path.GetTempPath() + Path.GetFileName(icon.FileName);
+                    string icofile = Path.GetTempPath() + Path.ChangeExtension(Path.GetFileName(icon.FileName),"png");
                     Icone_textBox.Text = icon.FileName;
-                    if (File.Exists(tmpIco)) image = Image.FromFile(tmpIco);
-                    else image = Image.FromFile(Icone_textBox.Text);
-                    pictureBox1.Image = image;
 
+                    if (File.Exists(icofile))
+                    {
+                        pics.Add(icofile);
+                    }
+                    else icofile = icon.FileName;
+                    //image = Image.FromFile(icofile);
+                    using (FileStream fs = new FileStream(icofile, FileMode.Open))
+                    {
+                        pictureBox1.Image = Image.FromStream(fs);
+                    }
                 }
             }
         }
@@ -93,7 +109,7 @@ namespace Change_Icon
             Folder_Error.Clear();
             if (Icone_textBox.Text == "")
             {
-                Folder_Error.SetIconPadding(Set,0);
+                Folder_Error.SetIconPadding(Set, 0);
                 Folder_Error.SetError(Set, "You must selcet icon first");
             }
             else {
@@ -107,15 +123,16 @@ namespace Change_Icon
                         File.Delete(path);
                     }
 
-                    if (File.Exists(Folder_textBox.Text + "\\" + Path.GetFileNameWithoutExtension(Icone_textBox.Text) + ".ico"))
+                    string ti = Folder_textBox.Text + "\\" + Path.ChangeExtension(Path.GetFileName(Icone_textBox.Text), "ico");
+                    if (File.Exists(ti))
                     {
-                        iconS = Folder_textBox.Text + "\\" + Path.GetFileNameWithoutExtension(Icone_textBox.Text) + ".ico";
+                        iconS = ti;
                     }
 
                     else
                     {
-                        string tmpSorce = Path.GetTempPath() + Path.GetFileNameWithoutExtension(Icone_textBox.Text) + ".ico";
-                        if (File.Exists(tmpSorce)) sourceFile = tmpSorce;
+                        string tmpSource = Path.GetTempPath() + Path.ChangeExtension(Path.GetFileName(Icone_textBox.Text), "ico");
+                        if (File.Exists(tmpSource)) sourceFile = tmpSource;
                         else sourceFile = Icone_textBox.Text;
                         iconS = Folder_textBox.Text + "\\" + Path.GetFileName(sourceFile);
                         File.Copy(sourceFile, iconS, true);
@@ -123,7 +140,6 @@ namespace Change_Icon
 
                     if (File.Exists(iconS))
                     {
-
                         FolderIcon myFolderIcon = new FolderIcon(Folder_textBox.Text);
                         myFolderIcon.CreateFolderIcon(iconS);
                         myFolderIcon = null;
@@ -142,29 +158,17 @@ namespace Change_Icon
 
                         uint HRESULT = SHGetSetFolderCustomSettings(ref FolderSettings, Folder_textBox.Text, FCS_FORCEWRITE);
                         MessageBox.Show("Done", "OK");
-                        Dispose();
+                        Application.Exit();
                     }
                 }
             }
-        }
-
-        private void Icon_Change_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            string file = Path.GetTempPath() + Path.GetFileNameWithoutExtension(Path.GetTempPath() + Path.GetFileNameWithoutExtension(Icone_textBox.Text) + ".ico") + ".png";
-            string ico = Path.GetTempPath() + Path.GetFileNameWithoutExtension(Icone_textBox.Text) + ".ico";
-
-
-            if (image != null) image.Dispose();
-            GC.Collect();
-            if (File.Exists(file)) File.Delete(file);
-            if (File.Exists(ico)) File.Delete(ico);
         }
 
         private void Reset_Folder_Click(object sender, EventArgs e)
         {
             Folder_Error.Clear();
             if (Folder_textBox.Text == "")
-            {                
+            {
                 Folder_Error.SetIconPadding(Reset_Folder, -90);
                 Folder_Error.SetError(Reset_Folder, "You must selcet folder first");
             }
@@ -187,6 +191,26 @@ namespace Change_Icon
                     find = false;
                 }
                 else MessageBox.Show("Folder is already at default", "GeneralMessage");
+            }
+        }
+
+        private void Icon_Change_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            //string file = Path.GetTempPath() + Path.GetFileNameWithoutExtension(Path.GetTempPath() + Path.GetFileNameWithoutExtension(Icone_textBox.Text) + ".ico") + ".png";
+            //string ico = Path.GetTempPath() + Path.GetFileNameWithoutExtension(Icone_textBox.Text) + ".ico";
+            //if(image!=null) image.Dispose();
+            //pictureBox1.Image = null;
+            //pictureBox1= null;
+            GC.SuppressFinalize(this);
+            foreach (string pic in pics)
+            {
+                
+                if (File.Exists(pic))
+                {
+                    string s = Path.ChangeExtension(pic, "ico");
+                    File.Delete(pic);
+                    File.Delete(Path.ChangeExtension(pic, "ico"));
+                }
             }
         }
     }
