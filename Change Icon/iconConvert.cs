@@ -100,36 +100,34 @@ namespace Change_Icon
         /// </summary>
         /// <param name="inputPath">The input path</param>
         /// <param name="outputPath">The output path</param>
-        /// <param name="size">The size (16x16 px by default)</param>
+        /// <param name="size">The size (256x256 px by default)</param>
         /// <param name="preserveAspectRatio">Preserve the aspect ratio</param>
         /// <returns>Wether or not the icon was succesfully generated</returns>
         public static bool ConvertToIcon(string inputPath, string outputPath, int size = 16, bool preserveAspectRatio = false)
         {
-
+            //General Helper Filse and Paths
             string In = Path.GetTempPath() + Path.GetFileNameWithoutExtension(outputPath) + ".png";
             string png1 = Path.GetTempPath() + "Helper1.png";
             string png2 = Path.GetTempPath() + "Helper2.png";
             string outpng = Path.GetTempPath() + "out.png";
-            //Image img1 = null;
-            //Image img2 = null;
-            //Image main = null;
-            //Bitmap img3 = null;
-            //Graphics g = null;
-            //Graphics q = null;
-            //Graphics o = null;
-            //FileStream inStream = null;
-
             int width, height;
-            //File.Copy(In, outpng , true);
+            //
 
+            //Copy the original IMG to user TMP folder
             File.Copy(inputPath, In, true);
+
+            //TMP bitmap to Help Generate Hlper Files
             Bitmap bmp = new Bitmap(256, 256);
+
+            /*
+            initialization of FileStream and BitMap to Create Helper file, 
+            thet will be used to complete non 1:1 ratio Pics in to complete square
+            */
             using (FileStream inStream = new FileStream(In, FileMode.Open))
             {
+
                 using (Bitmap inputBitmap = (Bitmap)Image.FromStream(inStream))
                 {
-
-
                     if (inputBitmap.Width > inputBitmap.Height)
                     {
                         width = inputBitmap.Width;
@@ -159,11 +157,13 @@ namespace Change_Icon
                     bmp.Save(png1, ImageFormat.Png);
                     bmp.Save(png2, ImageFormat.Png);
                     bmp.Dispose();
-
-                    //Graphics g = Graphics.FromImage(bmp);
                     g.FillRectangle(Brushes.Transparent, 100, 100, 100, 100);
                 }
             }
+
+            /*
+             initialization of 3 Image that will eventually be marge into one square file.
+            */
             Image img1 = Image.FromFile(png1);
             Image img2 = Image.FromFile(png2);
             Image main = Image.FromFile(In);
@@ -220,7 +220,10 @@ namespace Change_Icon
                 main.Dispose();
 
             }
+            //copying final image to the user define folder
             File.Copy(outpng, In, true);
+
+            //Delete helper files
             File.Delete(png1);
             File.Delete(png2);
             File.Delete(outpng);

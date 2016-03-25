@@ -15,7 +15,8 @@ namespace Change_Icon
             InitializeComponent();
         }
 
-
+        //Global List that will hold all the chosen images (in the the current operation)
+        private static List<string> pics = new List<string>();
 
         private void Folder_button_Click(object sender, EventArgs e)
         {
@@ -28,16 +29,15 @@ namespace Change_Icon
 
                 Folder_textBox.Text = folder.FileName;
             }
-
         }
-        private static List<string> pics = new List<string>();
+
         public List<string> getMyList
         {
             get { return pics; }
             set { pics = value; } 
         }
-        //public List<int> PropertyId = new List<int>();
-        //Image image = null;
+
+
         private void Icon_button_Click(object sender, EventArgs e)
         {
             Folder_Error.Clear();
@@ -70,7 +70,6 @@ namespace Change_Icon
                         pics.Add(icofile);
                     }
                     else icofile = icon.FileName;
-                    //image = Image.FromFile(icofile);
                     using (FileStream fs = new FileStream(icofile, FileMode.Open))
                     {
                         pictureBox1.Image = Image.FromStream(fs);
@@ -80,8 +79,6 @@ namespace Change_Icon
         }
 
 
-        //[DllImport("shell32.dll")]
-        //static extern void SHChangeNotify(int eventId, int flags, IntPtr item1, IntPtr item2);
         [DllImport("Shell32.dll", CharSet = CharSet.Auto)]
         static extern uint SHGetSetFolderCustomSettings(ref LPSHFOLDERCUSTOMSETTINGS pfcs, string pszPath, uint dwReadWrite);
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
@@ -196,11 +193,7 @@ namespace Change_Icon
 
         private void Icon_Change_FormClosed(object sender, FormClosedEventArgs e)
         {
-            //string file = Path.GetTempPath() + Path.GetFileNameWithoutExtension(Path.GetTempPath() + Path.GetFileNameWithoutExtension(Icone_textBox.Text) + ".ico") + ".png";
-            //string ico = Path.GetTempPath() + Path.GetFileNameWithoutExtension(Icone_textBox.Text) + ".ico";
-            //if(image!=null) image.Dispose();
-            //pictureBox1.Image = null;
-            //pictureBox1= null;
+            //general cleanup
             GC.SuppressFinalize(this);
             foreach (string pic in pics)
             {
