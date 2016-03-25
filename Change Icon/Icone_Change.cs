@@ -58,7 +58,7 @@ namespace Change_Icon
                 if (result == DialogResult.OK)
                 {
                     string ext = Path.GetExtension(icon.FileName);
-                    if (ext.ToLower().Equals(".jpg") || ext.ToLower().Equals(".jpeg") || ext.ToLower().Equals(".png") || ext.ToLower().Equals("*.bmp"))
+                    if (ext.ToLower().Equals(".jpg") || ext.ToLower().Equals(".jpeg") || ext.ToLower().Equals(".png") || ext.ToLower().Equals(".bmp"))
                     {
                         iconConvert.ConvertToIcon(icon.FileName, Path.GetTempPath() + Path.GetFileNameWithoutExtension(icon.FileName) + ".ico", 256, false);
                     }
