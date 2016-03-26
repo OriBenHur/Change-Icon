@@ -110,14 +110,11 @@ namespace Change_Icon
             string png1 = Path.GetTempPath() + "Helper1.png";
             string png2 = Path.GetTempPath() + "Helper2.png";
             string outpng = Path.GetTempPath() + "out.png";
-            int width, height;
-            //
+
+
 
             //Copy the original IMG to user TMP folder
             File.Copy(inputPath, In, true);
-
-            //TMP bitmap to Help Generate Hlper Files
-            Bitmap bmp = new Bitmap(256, 256);
 
             /*
             initialization of FileStream and BitMap to Create Helper file, 
@@ -128,36 +125,41 @@ namespace Change_Icon
 
                 using (Bitmap inputBitmap = (Bitmap)Image.FromStream(inStream))
                 {
-                    if (inputBitmap.Width > inputBitmap.Height)
+                    int height = inputBitmap.Height;
+                    int width = inputBitmap.Width;
+                    //TMP bitmap to Help Generate Hlper Files
+                    Bitmap bmp = new Bitmap(256, 256);
+                    if (width > height)
                     {
                         width = inputBitmap.Width;
                         height = inputBitmap.Height;
-                        int cHeight = (width - height) / 2;
-                        if (cHeight < 1) cHeight = 1;
-                        bmp = new Bitmap(width, cHeight);
+                        height = (width - height) / 2;
+                        if (height < 1) height = 1;
                     }
 
-                    else if (inputBitmap.Width < inputBitmap.Height)
+                    else if (width < height)
                     {
                         height = inputBitmap.Height;
                         width = inputBitmap.Width;
-                        int cWidth = (height - width) / 2;
-                        if (cWidth < 1) cWidth = 1;
-                        bmp = new Bitmap(cWidth, height);
+                        width = (height - width) / 2;
+                        if (width < 1) width = 1;
 
                     }
                     else
                     {
-                        bmp = new Bitmap(1, 1);
+                        bmp.Dispose();
                     }
 
+                    bmp = new Bitmap(width, height);
                     Graphics g = Graphics.FromImage(bmp);
                     g.Clear(Color.Transparent);
-                    g.Flush();
                     bmp.Save(png1, ImageFormat.Png);
                     bmp.Save(png2, ImageFormat.Png);
+                    g.Flush();
                     bmp.Dispose();
                     g.FillRectangle(Brushes.Transparent, 100, 100, 100, 100);
+                    g.Dispose();
+                    inStream.Flush();
                 }
             }
 
@@ -184,8 +186,6 @@ namespace Change_Icon
                 img1.Dispose();
                 img2.Dispose();
                 main.Dispose();
-
-
             }
             else if (main.Width < main.Height)
             {
@@ -228,9 +228,11 @@ namespace Change_Icon
             File.Delete(png2);
             File.Delete(outpng);
             using (FileStream inputStream = new FileStream(In, FileMode.Open))
-            using (FileStream outputStream = new FileStream(outputPath, FileMode.OpenOrCreate))
             {
-                return ConvertToIcon(inputStream, outputStream, size, preserveAspectRatio);
+                using (FileStream outputStream = new FileStream(outputPath, FileMode.OpenOrCreate))
+                {
+                    return ConvertToIcon(inputStream, outputStream, size, preserveAspectRatio);
+                }
             }
         }
     }
