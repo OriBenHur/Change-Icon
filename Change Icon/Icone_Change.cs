@@ -34,7 +34,7 @@ namespace Change_Icon
         public List<string> getMyList
         {
             get { return pics; }
-            set { pics = value; } 
+            set { pics = value; }
         }
 
 
@@ -57,20 +57,22 @@ namespace Change_Icon
                 DialogResult result = icon.ShowDialog();
                 if (result == DialogResult.OK)
                 {
+                    string icofile = Path.GetTempPath() + Path.ChangeExtension(Path.GetFileName(icon.FileName), "png");
+                    Icone_textBox.Text = icon.FileName;
+                    string destfile = Path.ChangeExtension(icofile, Path.GetExtension(icon.FileName));
+                    File.Copy(icon.FileName, destfile, true);
                     string ext = Path.GetExtension(icon.FileName);
                     if (ext.ToLower().Equals(".jpg") || ext.ToLower().Equals(".jpeg") || ext.ToLower().Equals(".png") || ext.ToLower().Equals(".bmp"))
                     {
-                        iconConvert.ConvertToIcon(icon.FileName, Path.GetTempPath() + Path.GetFileNameWithoutExtension(icon.FileName) + ".ico", 256, false);
+                        iconConvert.ConvertToIcon(destfile, Path.ChangeExtension(destfile, "ico"), 256, false);
                     }
-                    string icofile = Path.GetTempPath() + Path.ChangeExtension(Path.GetFileName(icon.FileName),"png");
-                    Icone_textBox.Text = icon.FileName;
 
-                    if (File.Exists(icofile))
+                    if (File.Exists(destfile))
                     {
-                        pics.Add(icofile);
+                        pics.Add(destfile);
                     }
-                    else icofile = icon.FileName;
-                    using (FileStream fs = new FileStream(icofile, FileMode.Open))
+                    else destfile = icon.FileName;
+                    using (FileStream fs = new FileStream(destfile, FileMode.Open))
                     {
                         pictureBox1.Image = Image.FromStream(fs);
                     }
@@ -197,13 +199,11 @@ namespace Change_Icon
             GC.SuppressFinalize(this);
             foreach (string pic in pics)
             {
-                
-                if (File.Exists(pic))
-                {
-                    string s = Path.ChangeExtension(pic, "ico");
-                    File.Delete(pic);
-                    File.Delete(Path.ChangeExtension(pic, "ico"));
-                }
+                if (File.Exists(Path.ChangeExtension(pic, "png"))) File.Delete(Path.ChangeExtension(pic, "png"));
+                if (File.Exists(Path.ChangeExtension(pic, "bmp"))) File.Delete(Path.ChangeExtension(pic, "bmp"));
+                if (File.Exists(Path.ChangeExtension(pic, "jpg"))) File.Delete(Path.ChangeExtension(pic, "jpg"));
+                if (File.Exists(Path.ChangeExtension(pic, "jpeg"))) File.Delete(Path.ChangeExtension(pic, "jpeg"));
+                if (File.Exists(Path.ChangeExtension(pic, "ico"))) File.Delete(Path.ChangeExtension(pic, "ico"));
             }
         }
     }
