@@ -1,6 +1,6 @@
 ﻿using System;
-//using System.Collections.Generic;
 using System.Windows.Forms;
+//using System.Collections.Generic;
 
 namespace Change_Icon
 {
@@ -14,7 +14,7 @@ namespace Change_Icon
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Icon_Change());
+            Application.Run(new IconChange());
         }
     }
 }

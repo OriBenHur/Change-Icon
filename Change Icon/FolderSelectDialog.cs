@@ -15,14 +15,14 @@ namespace Change_Icon
 	public class FolderSelectDialog
 	{
 		// Wrapped dialog
-		System.Windows.Forms.OpenFileDialog ofd = null;
+		OpenFileDialog ofd;
 
 		/// <summary>
 		/// Default constructor
 		/// </summary>
 		public FolderSelectDialog()
 		{
-			ofd = new System.Windows.Forms.OpenFileDialog();
+			ofd = new OpenFileDialog();
 
 			ofd.Filter = "Folders|\n";
 			ofd.AddExtension = false;
@@ -80,28 +80,28 @@ namespace Change_Icon
 		/// <returns>True if the user presses OK else false</returns>
 		public bool ShowDialog(IntPtr hWndOwner)
 		{
-			bool flag = false;
+			var flag = false;
 
 			if (Environment.OSVersion.Version.Major >= 6)
 			{
 				var r = new Reflector("System.Windows.Forms");
 
 				uint num = 0;
-				Type typeIFileDialog = r.GetType("FileDialogNative.IFileDialog");
-				object dialog = r.Call(ofd, "CreateVistaDialog");
+				var typeIFileDialog = r.GetType("FileDialogNative.IFileDialog");
+				var dialog = r.Call(ofd, "CreateVistaDialog");
 				r.Call(ofd, "OnBeforeVistaDialog", dialog);
 
-				uint options = (uint)r.CallAs(typeof(System.Windows.Forms.FileDialog), ofd, "GetOptions");
+				var options = (uint)r.CallAs(typeof(FileDialog), ofd, "GetOptions");
 				options |= (uint)r.GetEnum("FileDialogNative.FOS", "FOS_PICKFOLDERS");
 				r.CallAs(typeIFileDialog, dialog, "SetOptions", options);
 
-				object pfde = r.New("FileDialog.VistaDialogEvents", ofd);
-				object[] parameters = new object[] { pfde, num };
+				var pfde = r.New("FileDialog.VistaDialogEvents", ofd);
+				var parameters = new[] { pfde, num };
 				r.CallAs2(typeIFileDialog, dialog, "Advise", parameters);
 				num = (uint)parameters[1];
 				try
 				{
-					int num2 = (int)r.CallAs(typeIFileDialog, dialog, "Show", hWndOwner);
+					var num2 = (int)r.CallAs(typeIFileDialog, dialog, "Show", hWndOwner);
 					flag = 0 == num2;
 				}
 				finally
@@ -113,8 +113,8 @@ namespace Change_Icon
 			else
 			{
 				var fbd = new FolderBrowserDialog();
-				fbd.Description = this.Title;
-				fbd.SelectedPath = this.InitialDirectory;
+				fbd.Description = Title;
+				fbd.SelectedPath = InitialDirectory;
 				fbd.ShowNewFolderButton = false;
 				if (fbd.ShowDialog(new WindowWrapper(hWndOwner)) != DialogResult.OK) return false;
 				ofd.FileName = fbd.SelectedPath;
@@ -130,7 +130,7 @@ namespace Change_Icon
 	/// <summary>
 	/// Creates IWin32Window around an IntPtr
 	/// </summary>
-	public class WindowWrapper : System.Windows.Forms.IWin32Window
+	public class WindowWrapper : IWin32Window
 	{
 		/// <summary>
 		/// Constructor

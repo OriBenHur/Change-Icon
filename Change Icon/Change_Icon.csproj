@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="FolderIcon.cs" />
     <Compile Include="FolderSelectDialog.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="iconConvert.cs" />
     <Compile Include="Icone_Change.cs">
       <SubType>Form</SubType>

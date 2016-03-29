@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Runtime.InteropServices;
 using BYTE = System.Byte;
 using WORD = System.Int16;
@@ -24,10 +21,10 @@ namespace TAFactory.IconPack
         /// <returns>TAFactory.IconPack.GroupIconDir</returns>
         public GroupIconDir ToGroupIconDir()
         {
-            GroupIconDir grpDir = new GroupIconDir();
-            grpDir.Reserved = this.Reserved;
-            grpDir.Type = this.Type;
-            grpDir.Count = this.Count;
+            var grpDir = new GroupIconDir();
+            grpDir.Reserved = Reserved;
+            grpDir.Type = Type;
+            grpDir.Count = Count;
             return grpDir;
         }
     }
@@ -54,14 +51,14 @@ namespace TAFactory.IconPack
         /// <returns>TAFactory.IconPack.GroupIconDirEntry</returns>
         public GroupIconDirEntry ToGroupIconDirEntry(int id)
         {
-            GroupIconDirEntry grpEntry = new GroupIconDirEntry();
-            grpEntry.Width = this.Width;
-            grpEntry.Height = this.Height;
-            grpEntry.ColorCount = this.ColorCount;
-            grpEntry.Reserved = this.Reserved;
-            grpEntry.Planes = this.Planes;
-            grpEntry.BitCount = this.BitCount;
-            grpEntry.BytesInRes = this.BytesInRes;
+            var grpEntry = new GroupIconDirEntry();
+            grpEntry.Width = Width;
+            grpEntry.Height = Height;
+            grpEntry.ColorCount = ColorCount;
+            grpEntry.Reserved = Reserved;
+            grpEntry.Planes = Planes;
+            grpEntry.BitCount = BitCount;
+            grpEntry.BytesInRes = BytesInRes;
             grpEntry.ID = (short)id;
             return grpEntry;
         }
@@ -83,10 +80,10 @@ namespace TAFactory.IconPack
         /// <returns>TAFactory.IconPack.IconDir</returns>
         public IconDir ToIconDir()
         {
-            IconDir dir = new IconDir();
-            dir.Reserved = this.Reserved;
-            dir.Type = this.Type;
-            dir.Count = this.Count;
+            var dir = new IconDir();
+            dir.Reserved = Reserved;
+            dir.Type = Type;
+            dir.Count = Count;
             return dir;
         }
     }
@@ -113,14 +110,14 @@ namespace TAFactory.IconPack
         /// <returns>TAFactory.IconPack.IconDirEntry</returns>
         public IconDirEntry ToIconDirEntry(int imageOffiset)
         {
-            IconDirEntry entry = new IconDirEntry();
-            entry.Width = this.Width;
-            entry.Height = this.Height;
-            entry.ColorCount = this.ColorCount;
-            entry.Reserved = this.Reserved;
-            entry.Planes = this.Planes;
-            entry.BitCount = this.BitCount;
-            entry.BytesInRes = this.BytesInRes;
+            var entry = new IconDirEntry();
+            entry.Width = Width;
+            entry.Height = Height;
+            entry.ColorCount = ColorCount;
+            entry.Reserved = Reserved;
+            entry.Planes = Planes;
+            entry.BitCount = BitCount;
+            entry.BytesInRes = BytesInRes;
             entry.ImageOffset = imageOffiset;
             return entry;
         }

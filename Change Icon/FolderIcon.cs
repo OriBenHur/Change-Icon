@@ -17,9 +17,8 @@ EULA:           THIS SOURCE CODE MAY NOT BE DISTRIBUTED IN ANY FASHION WITHOUT
                 DAMAGES OR LOST PROFITS, EVEN IF THE END USER HAS OR HAS NOT 
                 BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -----------------------------------------------------------------------------*/
-using System;
+
 using System.IO;
-using System.Windows.Forms;
 
 namespace Change_Icon
 {
@@ -34,7 +33,7 @@ namespace Change_Icon
         /// <param name="folderPath">Path to the target folder</param>
         public FolderIcon(string folderPath)
         {
-            this.FolderPath = folderPath;
+            FolderPath = folderPath;
         }
 
 
@@ -62,21 +61,21 @@ namespace Change_Icon
         /// <param name="infoTip">Text to be displayed in the InfoTip shown by Windows Explorer</param>
         public void CreateFolderIcon(string targetFolderPath, string iconFilePath)
         {
-            this.FolderPath = targetFolderPath;
-            this.CreateFolderIcon(iconFilePath);
+            FolderPath = targetFolderPath;
+            CreateFolderIcon(iconFilePath);
         }
 
 
         /// <summary>FolderPath</summary>
         public string FolderPath
         {
-            get { return this.folderPath; }
+            get { return folderPath; }
             set
             {
                 folderPath = value;
-                if (!this.folderPath.EndsWith("\\"))
+                if (!folderPath.EndsWith("\\"))
                 {
-                    this.folderPath += "\\";
+                    folderPath += "\\";
                 }
             }
         }
@@ -98,13 +97,13 @@ namespace Change_Icon
         {
             // Check for a path in the folderPath variable, which we use to 
             // create the folder if it does not exist.
-            if (this.FolderPath.Length == 0)
+            if (FolderPath.Length == 0)
             {
                 return false;
             }
 
             // If the directory exists, then just return true.
-            if (Directory.Exists(this.FolderPath))
+            if (Directory.Exists(FolderPath))
             {
                 return true;
             }
@@ -112,9 +111,9 @@ namespace Change_Icon
             try
             {
                 // Try to create the directory.
-                DirectoryInfo di = Directory.CreateDirectory(this.FolderPath);
+                var di = Directory.CreateDirectory(FolderPath);
             }
-            catch (Exception e)
+            catch
             {
                 return false;
             }
@@ -134,7 +133,7 @@ namespace Change_Icon
         {
             // check some things that must (or should) be true before we continue...
             // determine if the Folder exists
-            if (!Directory.Exists(this.FolderPath))
+            if (!Directory.Exists(FolderPath))
             {
                 return false;
             }
@@ -151,14 +150,14 @@ namespace Change_Icon
             }
 
             // Set path to the desktop.ini file
-            this.IniPath = this.FolderPath + "desktop.ini";
+            IniPath = FolderPath + "desktop.ini";
 
             // Write .ini settings to the desktop.ini file
 
-            IniWriter.WriteValue(".ShellClassInfo", "IconResource","" + "," + iconIndex.ToString(), this.IniPath);
-            IniWriter.WriteValue("ViewState", "Mode", "", this.IniPath);
-            IniWriter.WriteValue("ViewState", "Vid", "", this.IniPath);
-            IniWriter.WriteValue("ViewState", "FolderType", "", this.IniPath);
+            IniWriter.WriteValue(".ShellClassInfo", "IconResource","" + "," + iconIndex, IniPath);
+            IniWriter.WriteValue("ViewState", "Mode", "", IniPath);
+            IniWriter.WriteValue("ViewState", "Vid", "", IniPath);
+            IniWriter.WriteValue("ViewState", "FolderType", "", IniPath);
 
             return true;
         }
@@ -171,7 +170,7 @@ namespace Change_Icon
         /// <param name="infoTip">Text to be displayed in the InfoTip shown by Windows Explorer</param>
         private void CreateDesktopIniFile(string iconFilePath)
         {
-            this.CreateDesktopIniFile(iconFilePath, false, 0);
+            CreateDesktopIniFile(iconFilePath, false, 0);
         }
 
 
@@ -181,21 +180,21 @@ namespace Change_Icon
         private bool SetIniFileAttributes()
         {
             // determine if the Folder exists
-            if (!File.Exists(this.IniPath))
+            if (!File.Exists(IniPath))
             {
                 return false;
             }
 
             // Set ini file attribute to "Hidden"
-            if ((File.GetAttributes(this.IniPath) & FileAttributes.Hidden) != FileAttributes.Hidden)
+            if ((File.GetAttributes(IniPath) & FileAttributes.Hidden) != FileAttributes.Hidden)
             {
-                File.SetAttributes(this.IniPath, File.GetAttributes(this.IniPath) | FileAttributes.Hidden);
+                File.SetAttributes(IniPath, File.GetAttributes(IniPath) | FileAttributes.Hidden);
             }
 
             // Set ini file attribute to "System"
-            if ((File.GetAttributes(this.IniPath) & FileAttributes.System) != FileAttributes.System)
+            if ((File.GetAttributes(IniPath) & FileAttributes.System) != FileAttributes.System)
             {
-                File.SetAttributes(this.IniPath, File.GetAttributes(this.IniPath) | FileAttributes.System);
+                File.SetAttributes(IniPath, File.GetAttributes(IniPath) | FileAttributes.System);
             }
 
             return true;
@@ -209,15 +208,15 @@ namespace Change_Icon
         private bool SetFolderAttributes()
         {
             // determine if the Folder exists
-            if (!Directory.Exists(this.FolderPath))
+            if (!Directory.Exists(FolderPath))
             {
                 return false;
             }
 
             // Set folder attribute to "System"
-            if ((File.GetAttributes(this.FolderPath) & FileAttributes.System) != FileAttributes.System)
+            if ((File.GetAttributes(FolderPath) & FileAttributes.System) != FileAttributes.System)
             {
-                File.SetAttributes(this.FolderPath, File.GetAttributes(this.FolderPath) | FileAttributes.System);
+                File.SetAttributes(FolderPath, File.GetAttributes(FolderPath) | FileAttributes.System);
             }
 
             return true;

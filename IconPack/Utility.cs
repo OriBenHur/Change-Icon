@@ -1,10 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace TAFactory.Utilities
+namespace IconPack
 {
     /// <summary>
     /// Holds a set of utilities.
@@ -20,12 +17,12 @@ namespace TAFactory.Utilities
         /// <returns>A structure of type T that was read from the stream.</returns>
         public static T ReadStructure<T>(Stream inputStream) where T : struct
         {
-            int size = Marshal.SizeOf(typeof(T));
-            byte[] buffer = new byte[size];
+            var size = Marshal.SizeOf(typeof(T));
+            var buffer = new byte[size];
             inputStream.Read(buffer, 0, size);
-            IntPtr ptr = Marshal.AllocHGlobal(size);
+            var ptr = Marshal.AllocHGlobal(size);
             Marshal.Copy(buffer, 0, ptr, size);
-            object ret = Marshal.PtrToStructure(ptr, typeof(T));
+            var ret = Marshal.PtrToStructure(ptr, typeof(T));
             Marshal.FreeHGlobal(ptr);
 
             return (T)ret;
@@ -38,9 +35,9 @@ namespace TAFactory.Utilities
         /// <param name="structure">The structure to be written.</param>
         public static void WriteStructure<T>(Stream outputStream, T structure) where T : struct
         {
-            int size = Marshal.SizeOf(typeof(T));
-            byte[] buffer = new byte[size];
-            IntPtr ptr = Marshal.AllocHGlobal(size);
+            var size = Marshal.SizeOf(typeof(T));
+            var buffer = new byte[size];
+            var ptr = Marshal.AllocHGlobal(size);
             Marshal.StructureToPtr(structure, ptr, true);
             Marshal.Copy(ptr, buffer, 0, size);
             Marshal.FreeHGlobal(ptr);

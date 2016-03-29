@@ -1,11 +1,14 @@
-﻿namespace Change_Icon
+﻿using System.ComponentModel;
+using System.Windows.Forms;
+
+namespace Change_Icon
 {
-    partial class Icon_Change
+    partial class IconChange
     {
         /// <summary>
         /// Required designer variable.
         /// </summary>
-        private System.ComponentModel.IContainer components = null;
+        private IContainer components = null;
 
         /// <summary>
         /// Clean up any resources being used.
@@ -29,7 +32,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Icon_Change));
+            var resources = new System.ComponentModel.ComponentResourceManager(typeof(IconChange));
             this.Folder_textBox = new System.Windows.Forms.TextBox();
             this.Folder_button = new System.Windows.Forms.Button();
             this.Icone_textBox = new System.Windows.Forms.TextBox();
@@ -53,7 +56,7 @@
             // 
             // Folder_button
             // 
-            this.Folder_button.Location = new System.Drawing.Point(246, 16);
+            this.Folder_button.Location = new System.Drawing.Point(246, 18);
             this.Folder_button.Name = "Folder_button";
             this.Folder_button.Size = new System.Drawing.Size(96, 23);
             this.Folder_button.TabIndex = 1;
@@ -88,7 +91,7 @@
             // 
             // Icon_button
             // 
-            this.Icon_button.Location = new System.Drawing.Point(246, 46);
+            this.Icon_button.Location = new System.Drawing.Point(246, 48);
             this.Icon_button.Name = "Icon_button";
             this.Icon_button.Size = new System.Drawing.Size(96, 23);
             this.Icon_button.TabIndex = 6;
@@ -148,7 +151,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
-            this.Name = "Icon_Change";
+            this.Name = "IconChange";
             this.Text = "Icon Change";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Icon_Change_FormClosed);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
@@ -160,16 +163,16 @@
 
         #endregion
 
-        private System.Windows.Forms.TextBox Folder_textBox;
-        private System.Windows.Forms.Button Folder_button;
-        private System.Windows.Forms.TextBox Icone_textBox;
-        private System.Windows.Forms.Label Folder_label;
-        private System.Windows.Forms.Label Icon_label;
-        private System.Windows.Forms.Button Icon_button;
-        private System.Windows.Forms.Button Set;
-        private System.Windows.Forms.PictureBox pictureBox1;
-        private System.Windows.Forms.ErrorProvider Folder_Error;
-        private System.Windows.Forms.Button Reset_Folder;
+        private TextBox Folder_textBox;
+        private Button Folder_button;
+        private TextBox Icone_textBox;
+        private Label Folder_label;
+        private Label Icon_label;
+        private Button Icon_button;
+        private Button Set;
+        private PictureBox pictureBox1;
+        private ErrorProvider Folder_Error;
+        private Button Reset_Folder;
     }
 }
 

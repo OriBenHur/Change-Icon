@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Runtime.InteropServices;
 
-namespace TAFactory.IconPack
+namespace IconPack
 {
     /// <summary>
     /// Represents a resource name (either integer resource or string resource).
@@ -39,15 +37,15 @@ namespace TAFactory.IconPack
         {
             get
             {
-                if (this.IsIntResource)
-                    return new IntPtr(this.Id.Value);
+                if (IsIntResource)
+                    if (Id != null) return new IntPtr(Id.Value);
 
-                if (this._value == IntPtr.Zero)
-                    this._value = Marshal.StringToHGlobalAuto(this.Name);
+                if (_value == IntPtr.Zero)
+                    _value = Marshal.StringToHGlobalAuto(Name);
 
                 return _value;
             }
-            private set { _value = value; }
+            set { _value = value; }
         }
 
         /// <summary>
@@ -55,15 +53,19 @@ namespace TAFactory.IconPack
         /// </summary>
         public bool IsIntResource
         {
-            get { return (this.Id != null); }
+            get { return (Id != null); }
         }
         #endregion
 
         #region Constructor/Destructor
+
         /// <summary>
         /// Initializes a new TAFactory.IconPack.ResourceName object.
         /// </summary>
-        /// <param name="lpszName">Specifies the resource name. For more ifnormation, see the Remarks section.</param>
+        /// <param>Specifies the resource name. For more ifnormation, see the Remarks section.
+        ///     <name>lpszName</name>
+        /// </param>
+        /// <param name="lpName"></param>
         /// <remarks>
         /// If the high bit of lpszName is not set (=0), lpszName specifies the integer identifier of the givin resource.
         /// Otherwise, it is a pointer to a null terminated string.
@@ -74,13 +76,13 @@ namespace TAFactory.IconPack
         {
             if (((uint)lpName >> 16) == 0)  //Integer resource
             {
-                this.Id = lpName.ToInt32();
-                this.Name = null;
+                Id = lpName.ToInt32();
+                Name = null;
             }
             else
             {
-                this.Id = null;
-                this.Name = Marshal.PtrToStringAuto(lpName);
+                Id = null;
+                Name = Marshal.PtrToStringAuto(lpName);
             }
         }
         /// <summary>
@@ -99,21 +101,24 @@ namespace TAFactory.IconPack
         /// <returns>Returns a System.String that represents the current TAFactory.IconPack.ResourceName.</returns>
         public override string ToString()
         {
-            if (this.IsIntResource)
-                return "#" + this.Id.ToString();
+            if (IsIntResource)
+                return "#" + Id;
 
-            return this.Name;
+            return Name;
         }
         /// <summary>
         /// Releases the pointer to the resource name.
         /// </summary>
         public void Free()
         {
-            if (this._value != IntPtr.Zero)
+            if (_value != IntPtr.Zero)
             {
-                try { Marshal.FreeHGlobal(this._value); }
-                catch { }
-                this._value = IntPtr.Zero;
+                try { Marshal.FreeHGlobal(_value); }
+                catch
+                {
+                    // ignored
+                }
+                _value = IntPtr.Zero;
             }
         }
         #endregion
