@@ -71,7 +71,7 @@ namespace Change_Icon
                         if (ext != null && (ext.ToLower().Equals(".jpg") || ext.ToLower().Equals(".jpeg") || ext.ToLower().Equals(".png") || ext.ToLower().Equals(".bmp")))
                         {
                             File.Copy(icon.FileName, destfile, true);
-                            iconConvert.ConvertToIcon(destfile, Path.ChangeExtension(destfile, "ico"));
+                            if(!IconConvert.ConvertToIcon(destfile, Path.ChangeExtension(destfile, "ico"))) Dispose();
                         }
 
                         if (File.Exists(destfile))
@@ -149,8 +149,7 @@ namespace Change_Icon
 
                 else
                 {
-                    var tmpSource = Path.GetTempPath() +
-                                    Path.ChangeExtension(Path.GetFileName(Icone_textBox.Text), "ico");
+                    var tmpSource = Path.GetTempPath() + Path.ChangeExtension(Path.GetFileName(Icone_textBox.Text), "ico");
                     var sourceFile = File.Exists(tmpSource) ? tmpSource : Icone_textBox.Text;
                     iconS = $@"{Folder_textBox.Text}\{Path.GetFileName(sourceFile)}";
                     File.Copy(sourceFile, iconS, true);

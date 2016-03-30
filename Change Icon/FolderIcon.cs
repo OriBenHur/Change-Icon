@@ -24,8 +24,8 @@ namespace Change_Icon
 {
     public class FolderIcon
     {
-        private string folderPath = "";
-        private string iniPath = "";
+        private string _folderPath = "";
+        private string _iniPath = "";
 
         /// <summary>
         /// Creates new FolderIcon object with the path to the target folder.
@@ -41,15 +41,12 @@ namespace Change_Icon
         /// Configures a folder in Windows Explorer to display an icon.
         /// </summary>
         /// <param name="iconFilePath">Path to icon file</param>
-        /// <param name="infoTip">Text to be displayed in the InfoTip shown by Windows Explorer</param>
         public void CreateFolderIcon(string iconFilePath)
         {
-            if (CreateFolder())
-            {
-                CreateDesktopIniFile(iconFilePath);
-                SetIniFileAttributes();
-                SetFolderAttributes();
-            }
+            if (!CreateFolder()) return;
+            CreateDesktopIniFile(iconFilePath);
+            SetIniFileAttributes();
+            SetFolderAttributes();
         }
 
 
@@ -58,7 +55,6 @@ namespace Change_Icon
         /// </summary>
         /// <param name="targetFolderPath">Folder to display with icon</param>
         /// <param name="iconFilePath">Path to icon [-containing] file</param>
-        /// <param name="infoTip">Text to be displayed in the InfoTip shown by Windows Explorer</param>
         public void CreateFolderIcon(string targetFolderPath, string iconFilePath)
         {
             FolderPath = targetFolderPath;
@@ -69,13 +65,13 @@ namespace Change_Icon
         /// <summary>FolderPath</summary>
         public string FolderPath
         {
-            get { return folderPath; }
+            get { return _folderPath; }
             set
             {
-                folderPath = value;
-                if (!folderPath.EndsWith("\\"))
+                _folderPath = value;
+                if (!_folderPath.EndsWith("\\"))
                 {
-                    folderPath += "\\";
+                    _folderPath += "\\";
                 }
             }
         }
@@ -86,8 +82,8 @@ namespace Change_Icon
         /// </summary>
         public string IniPath
         {
-            get { return iniPath; }
-            set { iniPath = value; }
+            get { return _iniPath; }
+            set { _iniPath = value; }
         }
 
 
@@ -111,7 +107,7 @@ namespace Change_Icon
             try
             {
                 // Try to create the directory.
-                var di = Directory.CreateDirectory(FolderPath);
+                Directory.CreateDirectory(FolderPath);
             }
             catch
             {
@@ -126,25 +122,24 @@ namespace Change_Icon
         /// Creates the desktop.ini file which points to a .ico file
         /// </summary>
         /// <param name="iconFilePath">Path to icon [-containing] file</param>
-        /// <param name="getIconFromDLL">Indicates that the icon is embedded in a DLL (or EXE)</param>
+        /// <param name="getIconFromDll">Indicates that the icon is embedded in a DLL (or EXE)</param>
         /// <param name="iconIndex">Index of icon embedded in DLL or EXE; set to zero if getIconFromDLL is false</param>
-        /// <param name="infoTip">Text to be displayed in the InfoTip shown by Windows Explorer</param>
-        private bool CreateDesktopIniFile(string iconFilePath, bool getIconFromDLL, int iconIndex)
+        private void CreateDesktopIniFile(string iconFilePath, bool getIconFromDll = false, int iconIndex = 0)
         {
             // check some things that must (or should) be true before we continue...
             // determine if the Folder exists
             if (!Directory.Exists(FolderPath))
             {
-                return false;
+                return;
             }
 
             // determine whether the icon file exists
             if (!File.Exists(iconFilePath))
             {
-                return false;
+                return;
             }
 
-            if (!getIconFromDLL)
+            if (!getIconFromDll)
             {
                 iconIndex = 0;
             }
@@ -158,31 +153,18 @@ namespace Change_Icon
             IniWriter.WriteValue("ViewState", "Mode", "", IniPath);
             IniWriter.WriteValue("ViewState", "Vid", "", IniPath);
             IniWriter.WriteValue("ViewState", "FolderType", "", IniPath);
-
-            return true;
-        }
-
-
-        /// <summary>
-        /// Creates a desktop.ini file to reference an icon file.
-        /// </summary>
-        /// <param name="iconFilePath">Path to icon file (.ico)</param>
-        /// <param name="infoTip">Text to be displayed in the InfoTip shown by Windows Explorer</param>
-        private void CreateDesktopIniFile(string iconFilePath)
-        {
-            CreateDesktopIniFile(iconFilePath, false, 0);
         }
 
 
         /// <summary>
         /// Sets the ini file folder's attributes to Hidden and System
         /// </summary>
-        private bool SetIniFileAttributes()
+        private void SetIniFileAttributes()
         {
             // determine if the Folder exists
             if (!File.Exists(IniPath))
             {
-                return false;
+                return;
             }
 
             // Set ini file attribute to "Hidden"
@@ -196,21 +178,18 @@ namespace Change_Icon
             {
                 File.SetAttributes(IniPath, File.GetAttributes(IniPath) | FileAttributes.System);
             }
-
-            return true;
-
         }
 
 
         /// <summary>
         /// Sets the folder's attributes to System
         /// </summary>
-        private bool SetFolderAttributes()
+        private void SetFolderAttributes()
         {
             // determine if the Folder exists
             if (!Directory.Exists(FolderPath))
             {
-                return false;
+                return;
             }
 
             // Set folder attribute to "System"
@@ -218,10 +197,6 @@ namespace Change_Icon
             {
                 File.SetAttributes(FolderPath, File.GetAttributes(FolderPath) | FileAttributes.System);
             }
-
-            return true;
-
         }
-
     }
 }
