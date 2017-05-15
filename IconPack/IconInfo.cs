@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using System.Text;
 using System.IO;
+using System.Drawing;
 using System.Runtime.InteropServices;
-using TAFactory.IconPack;
+using Microsoft.API;
+using TAFactory.Utilities;
 
-namespace IconPack
+namespace TAFactory.IconPack
 {
     /// <summary>
     /// Provides information about a givin icon.
@@ -32,7 +34,7 @@ namespace IconPack
             private set { _sourceIcon = value; }
         }
 
-        private string _fileName;
+        private string _fileName = null;
         /// <summary>
         /// Gets the icon's file name. 
         /// </summary>
@@ -57,7 +59,7 @@ namespace IconPack
         /// </summary>
         public bool IsMultiIcon
         {
-            get { return (Images.Count > 1); }
+            get { return (this.Images.Count > 1); }
         }
 
         private int _bestFitIconIndex;
@@ -111,9 +113,8 @@ namespace IconPack
         }
 
         private int _bitCount;
-
         /// <summary>
-        /// Gets icon bits per pixel (0 if < 8bpp /> ).
+        /// Gets icon bits per pixel (0 if < 8bpp).
         /// </summary>
         public int BitCount
         {
@@ -128,11 +129,11 @@ namespace IconPack
         {
             get
             {
-                if (BitCount != 0)
-                    return BitCount;
-                if (ColorCount == 0)
+                if (this.BitCount != 0)
+                    return this.BitCount;
+                if (this.ColorCount == 0)
                     return 0;
-                return (int)Math.Log(ColorCount, 2);
+                return (int)Math.Log(this.ColorCount, 2);
             }
         }
         #endregion
@@ -206,7 +207,7 @@ namespace IconPack
         /// <param name="icon">A System.Drawing.Icon object to retrieve the information about.</param>
         public IconInfo(Icon icon)
         {
-            FileName = null;
+            this.FileName = null;
             LoadIconInfo(icon);
         }
 
@@ -216,7 +217,7 @@ namespace IconPack
         /// <param name="fileName">A fully qualified name of the icon file, it can contain environment variables.</param>
         public IconInfo(string fileName)
         {
-            FileName = FileName;
+            this.FileName = FileName;
             LoadIconInfo(new Icon(fileName));
         }
         #endregion
@@ -228,9 +229,9 @@ namespace IconPack
         /// <returns>The icon index.</returns>
         public int GetBestFitIconIndex()
         {
-            int iconIndex;
-            var resBits = Marshal.AllocHGlobal(ResourceRawData.Length);
-            Marshal.Copy(ResourceRawData, 0, resBits, ResourceRawData.Length);
+            int iconIndex = 0;
+            IntPtr resBits = Marshal.AllocHGlobal(this.ResourceRawData.Length);
+            Marshal.Copy(this.ResourceRawData, 0, resBits, this.ResourceRawData.Length);
             try { iconIndex = Win32.LookupIconIdFromDirectory(resBits, true); }
             finally { Marshal.FreeHGlobal(resBits); }
 
@@ -253,12 +254,12 @@ namespace IconPack
         /// <returns>The icon index.</returns>
         public int GetBestFitIconIndex(Size desiredSize, bool isMonochrome)
         {
-            int iconIndex;
-            var flags = LookupIconIdFromDirectoryExFlags.LrDefaultcolor;
+            int iconIndex = 0;
+            LookupIconIdFromDirectoryExFlags flags = LookupIconIdFromDirectoryExFlags.LR_DEFAULTCOLOR;
             if (isMonochrome)
-                flags = LookupIconIdFromDirectoryExFlags.LrMonochrome;
-            var resBits = Marshal.AllocHGlobal(ResourceRawData.Length);
-            Marshal.Copy(ResourceRawData, 0, resBits, ResourceRawData.Length);
+                flags = LookupIconIdFromDirectoryExFlags.LR_MONOCHROME;
+            IntPtr resBits = Marshal.AllocHGlobal(this.ResourceRawData.Length);
+            Marshal.Copy(this.ResourceRawData, 0, resBits, this.ResourceRawData.Length);
             try { iconIndex = Win32.LookupIconIdFromDirectoryEx(resBits, true, desiredSize.Width, desiredSize.Height, flags); }
             finally { Marshal.FreeHGlobal(resBits); }
 
@@ -274,75 +275,75 @@ namespace IconPack
         private void LoadIconInfo(Icon icon)
         {
             if (icon == null)
-                throw new ArgumentNullException(nameof(icon));
+                throw new ArgumentNullException("icon");
 
-            SourceIcon = icon;
-            var inputStream = new MemoryStream();
-            SourceIcon.Save(inputStream);
+            this.SourceIcon = icon;
+            MemoryStream inputStream = new MemoryStream();
+            this.SourceIcon.Save(inputStream);
 
             inputStream.Seek(0, SeekOrigin.Begin);
-            var dir = Utility.ReadStructure<IconDir>(inputStream);
+            IconDir dir = Utility.ReadStructure<IconDir>(inputStream);
             
-            IconDir = dir;
-            GroupIconDir = dir.ToGroupIconDir();
+            this.IconDir = dir;
+            this.GroupIconDir = dir.ToGroupIconDir();
 
-            Images = new List<Icon>(dir.Count);
-            IconDirEntries = new List<IconDirEntry>(dir.Count);
-            GroupIconDirEntries = new List<GroupIconDirEntry>(dir.Count);
-            RawData = new List<byte[]>(dir.Count);
+            this.Images = new List<Icon>(dir.Count);
+            this.IconDirEntries = new List<IconDirEntry>(dir.Count);
+            this.GroupIconDirEntries = new List<GroupIconDirEntry>(dir.Count);
+            this.RawData = new List<byte[]>(dir.Count);
 
-            var newDir = dir;
+            IconDir newDir = dir;
             newDir.Count = 1;
-            for (var i = 0; i < dir.Count; i++)
+            for (int i = 0; i < dir.Count; i++)
             {
                 inputStream.Seek(SizeOfIconDir + i * SizeOfIconDirEntry, SeekOrigin.Begin);
 
-                var entry = Utility.ReadStructure<IconDirEntry>(inputStream);
+                IconDirEntry entry = Utility.ReadStructure<IconDirEntry>(inputStream);
                 
-                IconDirEntries.Add(entry);
-                GroupIconDirEntries.Add(entry.ToGroupIconDirEntry(i));
+                this.IconDirEntries.Add(entry);
+                this.GroupIconDirEntries.Add(entry.ToGroupIconDirEntry(i));
 
-                var content = new byte[entry.BytesInRes];
+                byte[] content = new byte[entry.BytesInRes];
                 inputStream.Seek(entry.ImageOffset, SeekOrigin.Begin);
                 inputStream.Read(content, 0, content.Length);
-                RawData.Add(content);
+                this.RawData.Add(content);
 
-                var newEntry = entry;
+                IconDirEntry newEntry = entry;
                 newEntry.ImageOffset = SizeOfIconDir + SizeOfIconDirEntry;
 
-                var outputStream = new MemoryStream();
-                Utility.WriteStructure(outputStream, newDir);
-                Utility.WriteStructure(outputStream, newEntry);
+                MemoryStream outputStream = new MemoryStream();
+                Utility.WriteStructure<IconDir>(outputStream, newDir);
+                Utility.WriteStructure<IconDirEntry>(outputStream, newEntry);
                 outputStream.Write(content, 0, content.Length);
 
                 outputStream.Seek(0, SeekOrigin.Begin);
-                var newIcon = new Icon(outputStream);
+                Icon newIcon = new Icon(outputStream);
                 outputStream.Close();
 
-                Images.Add(newIcon);
+                this.Images.Add(newIcon);
                 if (dir.Count == 1)
                 {
-                    BestFitIconIndex = 0;
+                    this.BestFitIconIndex = 0;
 
-                    Width = entry.Width;
-                    Height = entry.Height;
-                    ColorCount = entry.ColorCount;
-                    Planes = entry.Planes;
-                    BitCount = entry.BitCount;
+                    this.Width = entry.Width;
+                    this.Height = entry.Height;
+                    this.ColorCount = entry.ColorCount;
+                    this.Planes = entry.Planes;
+                    this.BitCount = entry.BitCount;
                 }
             }
             inputStream.Close();
-            ResourceRawData = GetIconResourceData();
+            this.ResourceRawData = GetIconResourceData();
 
             if (dir.Count > 1)
             {
-                BestFitIconIndex = GetBestFitIconIndex();
+                this.BestFitIconIndex = GetBestFitIconIndex();
 
-                Width = IconDirEntries[BestFitIconIndex].Width;
-                Height = IconDirEntries[BestFitIconIndex].Height;
-                ColorCount = IconDirEntries[BestFitIconIndex].ColorCount;
-                Planes = IconDirEntries[BestFitIconIndex].Planes;
-                BitCount = IconDirEntries[BestFitIconIndex].BitCount;
+                this.Width = this.IconDirEntries[this.BestFitIconIndex].Width;
+                this.Height = this.IconDirEntries[this.BestFitIconIndex].Height;
+                this.ColorCount = this.IconDirEntries[this.BestFitIconIndex].ColorCount;
+                this.Planes = this.IconDirEntries[this.BestFitIconIndex].Planes;
+                this.BitCount = this.IconDirEntries[this.BestFitIconIndex].BitCount;
             }
 
         }
@@ -352,11 +353,11 @@ namespace IconPack
         /// <returns>The icon's raw as a resource data.</returns>
         private byte[] GetIconResourceData()
         {
-            var outputStream = new MemoryStream();
-            Utility.WriteStructure(outputStream, GroupIconDir);
-            foreach (var entry in GroupIconDirEntries)
+            MemoryStream outputStream = new MemoryStream();
+            Utility.WriteStructure<GroupIconDir>(outputStream, this.GroupIconDir);
+            foreach (GroupIconDirEntry entry in this.GroupIconDirEntries)
             {
-                Utility.WriteStructure(outputStream, entry);
+                Utility.WriteStructure<GroupIconDirEntry>(outputStream, entry);
             }
 
             return outputStream.ToArray();

@@ -1,45 +1,46 @@
 using System;
-using System.Runtime.InteropServices;
+using System.Collections.Generic;
 using System.Text;
+using System.Runtime.InteropServices;
 
-namespace IconPack
+namespace Microsoft.API
 {
     [UnmanagedFunctionPointer(CallingConvention.Winapi, CharSet = CharSet.Auto)]
     public delegate bool EnumResNameProc(IntPtr hModule, ResourceTypes lpszType, IntPtr lpszName, IntPtr lParam);
 
     #region Enumurations
     [Flags]
-    public enum LoadLibraryExFlags
+    public enum LoadLibraryExFlags : int
     {
-        DontResolveDllReferences   = 0x00000001,
-        LoadLibraryAsDatafile      = 0x00000002,
-        LoadWithAlteredSearchPath = 0x00000008
+        DONT_RESOLVE_DLL_REFERENCES   = 0x00000001,
+        LOAD_LIBRARY_AS_DATAFILE      = 0x00000002,
+        LOAD_WITH_ALTERED_SEARCH_PATH = 0x00000008
     }
-    public enum GetLastErrorResult
+    public enum GetLastErrorResult : int
     {
-        ErrorSuccess                 = 0,
-        ErrorFileNotFound          = 2,
-        ErrorBadExeFormat          = 193,
-        ErrorResourceTypeNotFound = 1813
+        ERROR_SUCCESS                 = 0,
+        ERROR_FILE_NOT_FOUND          = 2,
+        ERROR_BAD_EXE_FORMAT          = 193,
+        ERROR_RESOURCE_TYPE_NOT_FOUND = 1813
     }
-    public enum ResourceTypes
+    public enum ResourceTypes : int
     {
-        RtIcon = 3,
-        RtGroupIcon = 14
+        RT_ICON = 3,
+        RT_GROUP_ICON = 14
     }
-    public enum LookupIconIdFromDirectoryExFlags
+    public enum LookupIconIdFromDirectoryExFlags : int
     {
-        LrDefaultcolor = 0,
-        LrMonochrome   = 1
+        LR_DEFAULTCOLOR = 0,
+        LR_MONOCHROME   = 1
     }
-    public enum LoadImageTypes
+    public enum LoadImageTypes : int
     {
-        ImageBitmap = 0,
-        ImageIcon   = 1,
-        ImageCursor = 2
+        IMAGE_BITMAP = 0,
+        IMAGE_ICON   = 1,
+        IMAGE_CURSOR = 2
     }
     [Flags]
-    public enum ShGetFileInfoFlags
+    public enum SHGetFileInfoFlags : int
     {
         Icon              = 0x000000100,     // get icon
         DisplayName       = 0x000000200,     // get display name
@@ -55,14 +56,14 @@ namespace IconPack
         SmallIcon         = 0x000000001,     // get small icon
         OpenIcon          = 0x000000002,     // get open icon
         ShellIconSize     = 0x000000004,     // get shell size icon
-        Pidl              = 0x000000008,     // pszPath is a pidl
+        PIDL              = 0x000000008,     // pszPath is a pidl
         UseFileAttributes = 0x000000010      // use passed dwFileAttribute
     }
     #endregion
 
     #region Structures
     [StructLayout(LayoutKind.Sequential)]
-    public struct Shfileinfo
+    public struct SHFILEINFO
     {
         public IntPtr hIcon;
         public IntPtr iIcon;
@@ -71,13 +72,13 @@ namespace IconPack
         public string szDisplayName;
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 80)]
         public string szTypeName;
-    }
+    };
     #endregion
 
     public static class Win32
     {
         #region Constants
-        public const int MaxPath = 260;
+        public const int MAX_PATH = 260;
         #endregion
 
         #region Helper Functions
@@ -119,13 +120,13 @@ namespace IconPack
         public static extern int LookupIconIdFromDirectory(IntPtr presbits, bool fIcon);
 
         [DllImport("user32.dll", SetLastError = true, ExactSpelling = true)]
-        public static extern int LookupIconIdFromDirectoryEx(IntPtr presbits, bool fIcon, int cxDesired, int cyDesired, LookupIconIdFromDirectoryExFlags flags);
+        public static extern int LookupIconIdFromDirectoryEx(IntPtr presbits, bool fIcon, int cxDesired, int cyDesired, LookupIconIdFromDirectoryExFlags Flags);
 
         [DllImport("user32.dll", EntryPoint = "LoadImageW", SetLastError = true, ExactSpelling = true)]
         public static extern IntPtr LoadImage(IntPtr hInstance, IntPtr lpszName, LoadImageTypes imageType, int cxDesired, int cyDesired, uint fuLoad);
 
         [DllImport("shell32.dll")]
-        public static extern IntPtr SHGetFileInfo(string pszPath, uint dwFileAttributes, ref Shfileinfo psfi, uint cbSizeFileInfo, ShGetFileInfoFlags uFlags);
+        public static extern IntPtr SHGetFileInfo(string pszPath, uint dwFileAttributes, ref SHFILEINFO psfi, uint cbSizeFileInfo, SHGetFileInfoFlags uFlags);
         #endregion
     }
 }

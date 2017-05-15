@@ -70,6 +70,7 @@ namespace Change_Icon
             this.Icone_textBox.Name = "Icone_textBox";
             this.Icone_textBox.Size = new System.Drawing.Size(193, 20);
             this.Icone_textBox.TabIndex = 2;
+
             // 
             // Folder_label
             // 

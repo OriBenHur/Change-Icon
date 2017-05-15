@@ -1,15 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Drawing;
-using System.IO;
+using Microsoft.API;
 using System.Runtime.InteropServices;
-using IconPack;
+using System.IO;
+using TAFactory.Utilities;
 
 namespace TAFactory.IconPack
 {
     #region Enumuration
     //[Flags]
-    public enum IconFlags
+    public enum IconFlags : int
     {
         Icon              = 0x000000100,     // get icon
         LinkOverlay       = 0x000008000,     // put a link overlay on icon
@@ -17,7 +19,7 @@ namespace TAFactory.IconPack
         LargeIcon         = 0x000000000,     // get large icon
         SmallIcon         = 0x000000001,     // get small icon
         OpenIcon          = 0x000000002,     // get open icon
-        ShellIconSize     = 0x000000004     // get shell size icon
+        ShellIconSize     = 0x000000004,     // get shell size icon
     }
     #endregion
 
@@ -63,7 +65,7 @@ namespace TAFactory.IconPack
                 return icon;
 
             //Load the file as an executable module.
-            using (var extractor = new IconExtractor(fileName))
+            using (IconExtractor extractor = new IconExtractor(fileName))
             {
                 return extractor.GetIconAt(iconIndex);
             }
@@ -79,7 +81,7 @@ namespace TAFactory.IconPack
         public static List<Icon> ExtractAllIcons(string fileName)
         {
             Icon icon = null;
-            var list = new List<Icon>();
+            List<Icon> list = new List<Icon>();
             //Try to load the file as icon file.
             try { icon = new Icon(Environment.ExpandEnvironmentVariables(fileName)); }
             catch { }
@@ -91,9 +93,9 @@ namespace TAFactory.IconPack
             }
 
             //Load the file as an executable module.
-            using (var extractor = new IconExtractor(fileName))
+            using (IconExtractor extractor = new IconExtractor(fileName))
             {
-                for (var i = 0; i < extractor.IconCount; i++)
+                for (int i = 0; i < extractor.IconCount; i++)
                 {
                     list.Add(extractor.GetIconAt(i));
                 }
@@ -108,7 +110,7 @@ namespace TAFactory.IconPack
         /// <returns>List of System.Drawing.Icon.</returns>
         public static List<Icon> SplitGroupIcon(Icon icon)
         {
-            var info = new IconInfo(icon);
+            IconInfo info = new IconInfo(icon);
             return info.Images;
         }
 
@@ -119,8 +121,8 @@ namespace TAFactory.IconPack
         /// <returns>System.Drawing.Icon that best fit the current display device.</returns>
         public static Icon GetBestFitIcon(Icon icon)
         {
-            var info = new IconInfo(icon);
-            var index = info.GetBestFitIconIndex();
+            IconInfo info = new IconInfo(icon);
+            int index = info.GetBestFitIconIndex();
             return info.Images[index];
         }
         /// <summary>
@@ -131,8 +133,8 @@ namespace TAFactory.IconPack
         /// <returns>System.Drawing.Icon that best fit the current display device.</returns>
         public static Icon GetBestFitIcon(Icon icon, Size desiredSize)
         {
-            var info = new IconInfo(icon);
-            var index = info.GetBestFitIconIndex(desiredSize);
+            IconInfo info = new IconInfo(icon);
+            int index = info.GetBestFitIconIndex(desiredSize);
             return info.Images[index];
         }
         /// <summary>
@@ -144,8 +146,8 @@ namespace TAFactory.IconPack
         /// <returns>System.Drawing.Icon that best fit the current display device.</returns>
         public static Icon GetBestFitIcon(Icon icon, Size desiredSize, bool isMonochrome)
         {
-            var info = new IconInfo(icon);
-            var index = info.GetBestFitIconIndex(desiredSize, isMonochrome);
+            IconInfo info = new IconInfo(icon);
+            int index = info.GetBestFitIconIndex(desiredSize, isMonochrome);
             return info.Images[index];
         }
 
@@ -157,7 +159,7 @@ namespace TAFactory.IconPack
         /// <returns>A System.Drawing.Icon (that best fits the current display device) extracted from the file at the specified index in case of an executable module.</returns>
         public static Icon ExtractBestFitIcon(string fileName, int iconIndex)
         {
-            var icon = ExtractIcon(fileName, iconIndex);
+            Icon icon = ExtractIcon(fileName, iconIndex);
             return GetBestFitIcon(icon);
         }
         /// <summary>
@@ -169,7 +171,7 @@ namespace TAFactory.IconPack
         /// <returns>A System.Drawing.Icon (that best fits the current display device) extracted from the file at the specified index in case of an executable module.</returns>
         public static Icon ExtractBestFitIcon(string fileName, int iconIndex, Size desiredSize)
         {
-            var icon = ExtractIcon(fileName, iconIndex);
+            Icon icon = ExtractIcon(fileName, iconIndex);
             return GetBestFitIcon(icon, desiredSize);
         }
         /// <summary>
@@ -182,7 +184,7 @@ namespace TAFactory.IconPack
         /// <returns>A System.Drawing.Icon (that best fits the current display device) extracted from the file at the specified index in case of an executable module.</returns>
         public static Icon ExtractBestFitIcon(string fileName, int iconIndex, Size desiredSize, bool isMonochrome)
         {
-            var icon = ExtractIcon(fileName, iconIndex);
+            Icon icon = ExtractIcon(fileName, iconIndex);
             return GetBestFitIcon(icon, desiredSize, isMonochrome);
         }
 
@@ -195,8 +197,8 @@ namespace TAFactory.IconPack
         public static Icon GetAssociatedIcon(string fileName, IconFlags flags)
         {
             flags |= IconFlags.Icon;
-            var fileInfo = new Shfileinfo();
-            var result = Win32.SHGetFileInfo(fileName, 0, ref fileInfo, (uint)Marshal.SizeOf(fileInfo), (ShGetFileInfoFlags) flags);
+            SHFILEINFO fileInfo = new SHFILEINFO();
+            IntPtr result = Win32.SHGetFileInfo(fileName, 0, ref fileInfo, (uint)Marshal.SizeOf(fileInfo), (SHGetFileInfoFlags) flags);
 
             if (fileInfo.hIcon == IntPtr.Zero)
                 return null;
@@ -229,13 +231,13 @@ namespace TAFactory.IconPack
         /// <returns>System.Drawing.Icon that contains all the images of the givin icons.</returns>
         public static Icon Merge(params Icon[] icons)
         {
-            var list = new List<IconInfo>(icons.Length);
-            var numImages = 0;
-            foreach (var icon in icons)
+            List<IconInfo> list = new List<IconInfo>(icons.Length);
+            int numImages = 0;
+            foreach (Icon icon in icons)
             {
                 if (icon != null)
                 {
-                    var info = new IconInfo(icon);
+                    IconInfo info = new IconInfo(icon);
                     list.Add(info);
                     numImages += info.Images.Count;
                 }
@@ -246,33 +248,33 @@ namespace TAFactory.IconPack
             }
 
             //Write the icon to a stream.
-            var outputStream = new MemoryStream();
-            var imageIndex = 0;
-            var imageOffset = IconInfo.SizeOfIconDir + numImages * IconInfo.SizeOfIconDirEntry;
-            for (var i = 0; i < list.Count; i++)
+            MemoryStream outputStream = new MemoryStream();
+            int imageIndex = 0;
+            int imageOffset = IconInfo.SizeOfIconDir + numImages * IconInfo.SizeOfIconDirEntry;
+            for (int i = 0; i < list.Count; i++)
             {
-                var iconInfo = list[i];
+                IconInfo iconInfo = list[i];
                 //The firs image, we should write the icon header.
                 if (i == 0)
                 {
                     //Get the IconDir and update image count with the new count.
-                    var dir = iconInfo.IconDir;
+                    IconDir dir = iconInfo.IconDir;
                     dir.Count = (short)numImages;
 
                     //Write the IconDir header.
                     outputStream.Seek(0, SeekOrigin.Begin);
-                    Utility.WriteStructure(outputStream, dir);
+                    Utility.WriteStructure<IconDir>(outputStream, dir);
                 }
                 //For each image in the current icon, we should write the IconDirEntry and the image raw data.
-                for (var j = 0; j < iconInfo.Images.Count; j++)
+                for (int j = 0; j < iconInfo.Images.Count; j++)
                 {
                     //Get the IconDirEntry and update the ImageOffset to the new offset.
-                    var entry = iconInfo.IconDirEntries[j];
+                    IconDirEntry entry = iconInfo.IconDirEntries[j];
                     entry.ImageOffset = imageOffset;
 
                     //Write the IconDirEntry to the stream.
                     outputStream.Seek(IconInfo.SizeOfIconDir + imageIndex * IconInfo.SizeOfIconDirEntry, SeekOrigin.Begin);
-                    Utility.WriteStructure(outputStream, entry);
+                    Utility.WriteStructure<IconDirEntry>(outputStream, entry);
 
                     //Write the image raw data.
                     outputStream.Seek(imageOffset, SeekOrigin.Begin);
@@ -286,7 +288,7 @@ namespace TAFactory.IconPack
 
             //Create the icon from the stream.
             outputStream.Seek(0, SeekOrigin.Begin);
-            var resultIcon = new Icon(outputStream);
+            Icon resultIcon = new Icon(outputStream);
             outputStream.Close();
 
             return resultIcon;

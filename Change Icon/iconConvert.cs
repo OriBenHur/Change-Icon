@@ -16,7 +16,7 @@ namespace Change_Icon
         /// <param name="size">The size (256x256 px by default)</param>
         /// <param name="preserveAspectRatio">Preserve the aspect ratio</param>
         /// <returns>Wether or not the icon was succesfully generated</returns>
-        public static bool ConvertToIcon(Stream input, Stream output, int size = 256, bool preserveAspectRatio = false)
+        private static bool ConvertToIcon(Stream input, Stream output, int size = 256, bool preserveAspectRatio = false)
         {
             try
             {
@@ -94,8 +94,7 @@ namespace Change_Icon
             }
             catch
             {
-                MessageBox.Show(@"Error in ConvertToIcon Helper" + @"
-" + @"The Program will terminate");
+                MessageBox.Show(@"Error in ConvertToIcon Helper" + Environment.NewLine + @"The Program will terminate");
                 return false;
             }
             return false;
@@ -119,6 +118,47 @@ namespace Change_Icon
         {
             //General Helper Filse and Paths
             var In = Path.GetTempPath() + Path.GetFileNameWithoutExtension(outputPath) + ".png";
+            var png1 = Path.GetTempPath() + "Helper1.png";
+            var png2 = Path.GetTempPath() + "Helper2.png";
+            var outpng = Path.GetTempPath() + "out.png";
+            CreateTmpFile(In, inputPath);
+            HelperFiles(In, png1, png2);
+            MargeFiles(In, png1, png2, outpng);
+            try
+            {
+                File.Copy(outpng, In, true);
+                File.Delete(png1);
+                File.Delete(png2);
+                File.Delete(outpng);
+            }
+            catch
+            {
+
+                MessageBox.Show(@"Failed to replase Original File With TMP File" + Environment.NewLine + @"The Program will terminate");
+                return false;
+            }
+
+            try
+            {
+
+
+                using (var inputStream = new FileStream(In, FileMode.Open))
+                {
+                    using (var outputStream = new FileStream(outputPath, FileMode.OpenOrCreate))
+                    {
+                        return ConvertToIcon(inputStream, outputStream, size, preserveAspectRatio);
+                    }
+                }
+            }
+            catch
+            {
+                MessageBox.Show(@"Failed to To Send To ConvertToIcon Helper" + Environment.NewLine + @"The Program will terminate");
+            }
+            return false;
+        }
+
+        private static void CreateTmpFile(string In, string inputPath)
+        {
             try
             {
                 using (var img = Image.FromFile(inputPath))
@@ -133,14 +173,12 @@ namespace Change_Icon
             }
             catch
             {
-
-                MessageBox.Show(@"Failed to Create TMP File" + @"
-" + @"The Program will terminate");
-                return false;
+                MessageBox.Show(@"Failed to Create TMP File" + Environment.NewLine + @"The Program will terminate");
             }
-            var png1 = Path.GetTempPath() + "Helper1.png";
-            var png2 = Path.GetTempPath() + "Helper2.png";
-            var outpng = Path.GetTempPath() + "out.png";
+        }
+
+        private static void HelperFiles(string In, string png1, string png2)
+        {
             try
             {
                 using (var inPic = Image.FromFile(In))
@@ -158,23 +196,25 @@ namespace Change_Icon
                         width = (height - width) / 2;
                         if (width < 1) width = 1;
                     }
-                    var bmp = new Bitmap(width, height);
-                    var g = Graphics.FromImage(bmp);
-                    g.FillRectangle(Brushes.Transparent, 0, 0, width, height);
-                    g.Dispose();
-                    bmp.Save(png1, ImageFormat.Png);
-                    bmp.Save(png2, ImageFormat.Png);
-                    bmp.Dispose();
-                    inPic.Dispose();
+                    using (var bmp = new Bitmap(width, height))
+                    {
+                        using (var g = Graphics.FromImage(bmp))
+                        {
+                            g.FillRectangle(Brushes.Transparent, 0, 0, width, height);
+                            bmp.Save(png1, ImageFormat.Png);
+                            bmp.Save(png2, ImageFormat.Png);
+                        }
+                    }
                 }
             }
             catch
             {
-                MessageBox.Show(@"Failed To Create Helper Files" + @"
-" + @"The Program will terminate");
-                return false;
+                MessageBox.Show(@"Failed To Create Helper Files" + Environment.NewLine + @"The Program will terminate");
             }
+        }
 
+        private static void MargeFiles(string In, string png1, string png2, string outpng)
+        {
             try
             {
                 using (var img1 = Image.FromFile(png1))
@@ -231,45 +271,8 @@ namespace Change_Icon
             }
             catch
             {
-
-                MessageBox.Show(@"Failed to Marage TMP File With Helper Files" + @"
-" + @"The Program will terminate");
-                return false;
+                MessageBox.Show(@"Failed to Marage TMP File With Helper Files" + Environment.NewLine + @"The Program will terminate");
             }
-
-            try
-            {
-                File.Copy(outpng, In, true);
-                File.Delete(png1);
-                File.Delete(png2);
-                File.Delete(outpng);
-            }
-            catch
-            {
-
-                MessageBox.Show(@"Failed to replase Original File With TMP File" + @"
-" + @"The Program will terminate");
-                return false;
-            }
-
-            try
-            {
-
-
-                using (var inputStream = new FileStream(In, FileMode.Open))
-                {
-                    using (var outputStream = new FileStream(outputPath, FileMode.OpenOrCreate))
-                    {
-                        return ConvertToIcon(inputStream, outputStream, size, preserveAspectRatio);
-                    }
-                }
-            }
-            catch
-            {
-                MessageBox.Show(@"Failed to To Send To ConvertToIcon Helper" + @"
-" + @"The Program will terminate");
-            }
-            return false;
         }
     }
 }

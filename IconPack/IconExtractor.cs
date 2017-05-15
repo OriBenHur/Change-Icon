@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Text;
+using Microsoft.API;
+using System.Runtime.InteropServices;
+using System.IO;
 using System.ComponentModel;
 using System.Drawing;
-using System.IO;
-using System.Runtime.InteropServices;
-using IconPack;
+using TAFactory.Utilities;
 
 namespace TAFactory.IconPack
 {
@@ -49,7 +51,7 @@ namespace TAFactory.IconPack
         /// </summary>
         public int IconCount
         {
-            get { return IconNamesList.Count; }
+            get { return this.IconNamesList.Count; }
         }
         #endregion
 
@@ -93,17 +95,18 @@ namespace TAFactory.IconPack
         /// <returns>Returns System.Drawing.Icon.</returns>
         public Icon GetIconAt(int index)
         {
-            if (index < 0 || index >= IconCount)
+            if (index < 0 || index >= this.IconCount)
             {
-                if (IconCount > 0)
-                    throw new ArgumentOutOfRangeException("index", index, "Index should be in the range (0-" + IconCount + ").");
-                throw new ArgumentOutOfRangeException("index", index, "No icons in the list.");
+                if (this.IconCount > 0)
+                    throw new ArgumentOutOfRangeException("index", index, "Index should be in the range (0-" + this.IconCount.ToString() + ").");
+                else
+                    throw new ArgumentOutOfRangeException("index", index, "No icons in the list.");
             }
 
-            if (!IconCache.ContainsKey(index))
-                IconCache[index] = GetIconFromLib(index);
+            if (!this.IconCache.ContainsKey(index))
+                this.IconCache[index] = GetIconFromLib(index);
 
-            return IconCache[index];
+            return this.IconCache[index];
         }
         #endregion
 
@@ -119,28 +122,28 @@ namespace TAFactory.IconPack
             if (string.IsNullOrEmpty(fileName))
                 throw new ArgumentNullException("fileName");
 
-            FileName = Environment.ExpandEnvironmentVariables(fileName);
+            this.FileName = Environment.ExpandEnvironmentVariables(fileName);
             //Load the executable module into memory using LoadLibraryEx API.
-            ModuleHandle = Win32.LoadLibraryEx(Environment.ExpandEnvironmentVariables(FileName), IntPtr.Zero, LoadLibraryExFlags.LoadLibraryAsDatafile);
-            if (ModuleHandle == IntPtr.Zero)
+            this.ModuleHandle = Win32.LoadLibraryEx(Environment.ExpandEnvironmentVariables(this.FileName), IntPtr.Zero, LoadLibraryExFlags.LOAD_LIBRARY_AS_DATAFILE);
+            if (this.ModuleHandle == IntPtr.Zero)
             {
-                var errorNum = Marshal.GetLastWin32Error();
+                int errorNum = Marshal.GetLastWin32Error();
                 switch ((GetLastErrorResult)errorNum)
                 {
-                    case GetLastErrorResult.ErrorFileNotFound:
-                        throw new FileNotFoundException("File not found.", FileName);
-                    case GetLastErrorResult.ErrorBadExeFormat:
-                        throw new ArgumentException("The file '" + FileName + "' is not a valid win32 executable or dll.");
+                    case GetLastErrorResult.ERROR_FILE_NOT_FOUND:
+                        throw new FileNotFoundException("File not found.", this.FileName);
+                    case GetLastErrorResult.ERROR_BAD_EXE_FORMAT:
+                        throw new ArgumentException("The file '" + this.FileName + "' is not a valid win32 executable or dll.");
                     default:
                         throw new Win32Exception(errorNum);
                 }
             }
             
-            IconNamesList = new List<ResourceName>();
-            IconCache = new Dictionary<int, Icon>();
+            this.IconNamesList = new List<ResourceName>();
+            this.IconCache = new Dictionary<int, Icon>();
 
             //Enumurate the resource names of RT_GROUP_ICON by calling EnumResourcesCallBack function for each resource of that type.
-            Win32.EnumResourceNames(ModuleHandle, ResourceTypes.RtGroupIcon, EnumResourcesCallBack, IntPtr.Zero);
+            Win32.EnumResourceNames(this.ModuleHandle, ResourceTypes.RT_GROUP_ICON, EnumResourcesCallBack, IntPtr.Zero);
         }
         /// <summary>
         /// The callback function that is being called for each resource (RT_GROUP_ICON, RT_ICON) in the executable module.
@@ -162,8 +165,8 @@ namespace TAFactory.IconPack
         {
             switch (lpszType)
             {
-                case ResourceTypes.RtGroupIcon:
-                    IconNamesList.Add(new ResourceName(lpszName));
+                case ResourceTypes.RT_GROUP_ICON:
+                    this.IconNamesList.Add(new ResourceName(lpszName));
                     break;
                 default:
                     break;
@@ -178,30 +181,30 @@ namespace TAFactory.IconPack
         /// <returns>Returns System.Drawing.Icon.</returns>
         private Icon GetIconFromLib(int index)
         {
-            var resourceData = GetResourceData(ModuleHandle, IconNamesList[index], ResourceTypes.RtGroupIcon);
+            byte[] resourceData = GetResourceData(this.ModuleHandle, this.IconNamesList[index], ResourceTypes.RT_GROUP_ICON);
             //Convert the resouce into an .ico file image.
-            using (var inputStream = new MemoryStream(resourceData))
-            using (var destStream = new MemoryStream())
+            using (MemoryStream inputStream = new MemoryStream(resourceData))
+            using (MemoryStream destStream = new MemoryStream())
             {
                 //Read the GroupIconDir header.
-                var grpDir = Utility.ReadStructure<GroupIconDir>(inputStream);
+                GroupIconDir grpDir = Utility.ReadStructure<GroupIconDir>(inputStream);
 
                 int numEntries = grpDir.Count;
-                var iconImageOffset = IconInfo.SizeOfIconDir + numEntries * IconInfo.SizeOfIconDirEntry;
+                int iconImageOffset = IconInfo.SizeOfIconDir + numEntries * IconInfo.SizeOfIconDirEntry;
 
                 //Write the IconDir header.
-                Utility.WriteStructure(destStream, grpDir.ToIconDir());
-                for (var i = 0; i < numEntries; i++)
+                Utility.WriteStructure<IconDir>(destStream, grpDir.ToIconDir());
+                for (int i = 0; i < numEntries; i++)
                 {
                     //Read the GroupIconDirEntry.
-                    var grpEntry = Utility.ReadStructure<GroupIconDirEntry>(inputStream);
+                    GroupIconDirEntry grpEntry = Utility.ReadStructure<GroupIconDirEntry>(inputStream);
 
                     //Write the IconDirEntry.
                     destStream.Seek(IconInfo.SizeOfIconDir + i * IconInfo.SizeOfIconDirEntry, SeekOrigin.Begin);
-                    Utility.WriteStructure(destStream, grpEntry.ToIconDirEntry(iconImageOffset));
+                    Utility.WriteStructure<IconDirEntry>(destStream, grpEntry.ToIconDirEntry(iconImageOffset));
 
                     //Get the icon image raw data and write it to the stream.
-                    var imgBuf = GetResourceData(ModuleHandle, grpEntry.ID, ResourceTypes.RtIcon);
+                    byte[] imgBuf = GetResourceData(this.ModuleHandle, grpEntry.ID, ResourceTypes.RT_ICON);
                     destStream.Seek(iconImageOffset, SeekOrigin.Begin);
                     destStream.Write(imgBuf, 0, imgBuf.Length);
                     
@@ -222,7 +225,7 @@ namespace TAFactory.IconPack
         private static byte[] GetResourceData(IntPtr hModule, ResourceName resourceName, ResourceTypes resourceType)
         {
             //Find the resource in the module.
-            var hResInfo = IntPtr.Zero;
+            IntPtr hResInfo = IntPtr.Zero;
             try { hResInfo = Win32.FindResource(hModule, resourceName.Value, resourceType); }
             finally { resourceName.Free(); }
             if (hResInfo == IntPtr.Zero)
@@ -230,25 +233,25 @@ namespace TAFactory.IconPack
                 throw new Win32Exception();
             }
             //Load the resource.
-            var hResData = Win32.LoadResource(hModule, hResInfo);
+            IntPtr hResData = Win32.LoadResource(hModule, hResInfo);
             if (hResData == IntPtr.Zero)
             {
                 throw new Win32Exception();
             }
             //Lock the resource to read data.
-            var hGlobal = Win32.LockResource(hResData);
+            IntPtr hGlobal = Win32.LockResource(hResData);
             if (hGlobal == IntPtr.Zero)
             {
                 throw new Win32Exception();
             }
             //Get the resource size.
-            var resSize = Win32.SizeofResource(hModule, hResInfo);
+            int resSize = Win32.SizeofResource(hModule, hResInfo);
             if (resSize == 0)
             {
                 throw new Win32Exception();
             }
             //Allocate the requested size.
-            var buf = new byte[resSize];
+            byte[] buf = new byte[resSize];
             //Copy the resource data into our buffer.
             Marshal.Copy(hGlobal, buf, 0, buf.Length);
 
@@ -264,31 +267,31 @@ namespace TAFactory.IconPack
         private static byte[] GetResourceData(IntPtr hModule, int resourceId, ResourceTypes resourceType)
         {
             //Find the resource in the module.
-            var hResInfo = Win32.FindResource(hModule, (IntPtr) resourceId, resourceType); 
+            IntPtr hResInfo = Win32.FindResource(hModule, (IntPtr) resourceId, resourceType); 
             if (hResInfo == IntPtr.Zero)
             {
                 throw new Win32Exception();
             }
             //Load the resource.
-            var hResData = Win32.LoadResource(hModule, hResInfo);
+            IntPtr hResData = Win32.LoadResource(hModule, hResInfo);
             if (hResData == IntPtr.Zero)
             {
                 throw new Win32Exception();
             }
             //Lock the resource to read data.
-            var hGlobal = Win32.LockResource(hResData);
+            IntPtr hGlobal = Win32.LockResource(hResData);
             if (hGlobal == IntPtr.Zero)
             {
                 throw new Win32Exception();
             }
             //Get the resource size.
-            var resSize = Win32.SizeofResource(hModule, hResInfo);
+            int resSize = Win32.SizeofResource(hModule, hResInfo);
             if (resSize == 0)
             {
                 throw new Win32Exception();
             }
             //Allocate the requested size.
-            var buf = new byte[resSize];
+            byte[] buf = new byte[resSize];
             //Copy the resource data into our buffer.
             Marshal.Copy(hGlobal, buf, 0, buf.Length);
 
@@ -302,14 +305,14 @@ namespace TAFactory.IconPack
         /// </summary>
         public void Dispose()
         {
-            if (ModuleHandle != IntPtr.Zero)
+            if (this.ModuleHandle != IntPtr.Zero)
             {
-                try { Win32.FreeLibrary(ModuleHandle); }
+                try { Win32.FreeLibrary(this.ModuleHandle); }
                 catch { }
-                ModuleHandle = IntPtr.Zero;
+                this.ModuleHandle = IntPtr.Zero;
             }
-            if (IconNamesList != null)
-                IconNamesList.Clear();
+            if (this.IconNamesList != null)
+                this.IconNamesList.Clear();
         }
         #endregion
     }
