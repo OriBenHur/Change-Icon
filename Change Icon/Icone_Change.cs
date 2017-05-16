@@ -4,6 +4,9 @@ using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using static System.IO.Path;
+// ReSharper disable AssignNullToNotNullAttribute
+
 //using TsudaKageyu;
 
 namespace Change_Icon
@@ -42,8 +45,9 @@ namespace Change_Icon
             get { return _pics; }
             set { _pics = value; }
         }
-        public static Random rnd = new Random();
-        int mRnd = rnd.Next(1, 1000);
+
+        private static readonly Random Rnd = new Random();
+        private readonly int _mRnd = Rnd.Next(1, 1000);
         
         private void Icon_button_Click(object sender, EventArgs e)
         {
@@ -59,11 +63,10 @@ namespace Change_Icon
                     var myIcon = new OpenFileDialog
                     {
                         Filter =
-                            @"resource files (*.dll, *.exe)|*.dll; *.exe|Icon files (*.ico)| *.ico|Common image files (*.jpg, *.jpeg, *.png, *.bmp)|*.jpg; *.jpeg; *.png; *.bmp",
+                            @"Icon files (*.ico)| *.ico|Common image files (*.jpg, *.jpeg, *.png, *.bmp)|*.jpg; *.jpeg; *.png; *.bmp|Resource Files (*.dll, *.exe)|*.dll; *.exe",
                         FilterIndex = 1,
                         RestoreDirectory = false
-                        //InitialDirectory = @"C:\Windows\System32",
-                        //FileName = @"shell32.dll"
+
 
 
                     };
@@ -71,30 +74,40 @@ namespace Change_Icon
 
                     if (result == DialogResult.OK)
                     {
-                        var icofile = Path.GetTempPath() + Path.ChangeExtension(Path.GetFileName(myIcon.FileName), "png");
+                        var icofile = GetTempPath() + ChangeExtension(GetFileName(myIcon.FileName), "png");
                         Icone_textBox.Text = myIcon.FileName;
-                        
-                        //var mRnd = rnd.Next(1, 100);
-                        var file = Path.GetFileNameWithoutExtension(myIcon.FileName);
-                        var fol = Path.GetDirectoryName(myIcon.FileName);
-                        var exte = Path.GetExtension(myIcon.FileName);
-                        string name = $@"{fol}\{file + mRnd}{exte}";
-                        Viewer frm2 = new Viewer(name);
-                        var destfile = Path.ChangeExtension(icofile, Path.GetExtension(myIcon.FileName));
-                        var ext = Path.GetExtension(myIcon.FileName);
+                        var file = GetFileNameWithoutExtension(myIcon.FileName);
+                        var fol = GetDirectoryName(myIcon.FileName);
+                        var exte = GetExtension(myIcon.FileName);
+                        string name = $@"{fol}\{file + _mRnd}{exte}";
+                        var frm2 = new Viewer(name);
+                        var destfile = ChangeExtension(icofile, GetExtension(myIcon.FileName));
+                        var ext = GetExtension(myIcon.FileName);
 
                         if (ext != null && (ext.ToLower().Equals(".jpg") || ext.ToLower().Equals(".jpeg") || ext.ToLower().Equals(".png") || ext.ToLower().Equals(".bmp")))
                         {
-                            File.Copy(myIcon.FileName, destfile, true);
-                            if (!IconConvert.ConvertToIcon(destfile, Path.ChangeExtension(destfile, "ico"))) Dispose();
+                            try
+                            {
+                                if (File.Exists(destfile))
+                                {
+                                    File.SetAttributes(destfile, FileAttributes.Normal);
+                                    File.Delete(destfile);  
+                                }
+                                File.Copy(myIcon.FileName, destfile, true);
+                                File.SetAttributes(destfile, FileAttributes.Normal);
+
+                                if (!IconConvert.ConvertToIcon(destfile, ChangeExtension(destfile, "ico"))) Dispose();
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show(ex.Message);
+                            }
                         }
                         else if (ext != null && (ext.ToLower().Equals(".dll") || ext.ToLower().Equals(".exe")))
                         {
-                            IconPickerDialog iconPick = new IconPickerDialog();
-                            iconPick.FileName = myIcon.FileName;
+                            var iconPick = new IconPickerDialog {FileName = myIcon.FileName};
                             var ico = iconPick.ShowDialog(this);
                             if (ico == DialogResult.OK)
-                            //var ico = IconPick.ShowDialog(this);
                             {
                                 var fileName = iconPick.FileName;
                                 var index = iconPick.IconIndex;
@@ -103,7 +116,7 @@ namespace Change_Icon
                                 Icon[] splitIcons;
                                 try
                                 {
-                                    var extension = Path.GetExtension(iconPick.FileName);
+                                    var extension = GetExtension(iconPick.FileName);
                                     if (extension != null && extension.ToLower() == ".ico")
                                     {
                                         icon = new Icon(iconPick.FileName);
@@ -129,24 +142,23 @@ namespace Change_Icon
                                 Icon = icon;
                                 icon.Dispose();
 
-                                var Mylist = new ListView();
-                                Mylist = frm2.list;
-                                Mylist.BeginUpdate();
+                                var mylist = frm2.list;
+                                mylist.BeginUpdate();
                                 foreach (var i in splitIcons)
                                 {
                                     var item = new Viewer.IconListViewItem();
                                     var size = i.Size;
                                     var bits = IconUtil.GetBitCount(i);
                                     
-                                    item.ToolTipText = string.Format("{0}x{1}, {2} bits", size.Width, size.Height, bits);
+                                    item.ToolTipText = $"{size.Width}x{size.Height}, {bits} bits";
                                     item.Bitmap = IconUtil.ToBitmap(i);
                                     i.Dispose();
-                                    Mylist.Items.Add(item);
+                                    mylist.Items.Add(item);
                                 }
                                 frm2.ShowDialog();
-                                Mylist.EndUpdate();
-                                destfile = Path.GetTempPath() + Path.GetFileName(Path.ChangeExtension(name, @"png"));
-                                if (!IconConvert.ConvertToIcon(destfile, Path.ChangeExtension(destfile, "ico"))) Dispose();
+                                mylist.EndUpdate();
+                                destfile = GetTempPath() + GetFileName(ChangeExtension(name, @"png"));
+                                if (!IconConvert.ConvertToIcon(destfile, ChangeExtension(destfile, "ico"))) Dispose();
 
                             }
                         }
@@ -160,7 +172,7 @@ namespace Change_Icon
 
                         else
                         {
-                            if (!ext.Equals(".dll"))
+                            if (ext != null && !ext.Equals(".dll"))
                             {
                                 destfile = myIcon.FileName;
                                 var img = Image.FromFile(destfile);
@@ -176,7 +188,7 @@ namespace Change_Icon
 
 
         [DllImport("Shell32.dll", CharSet = CharSet.Auto)]
-        static extern uint SHGetSetFolderCustomSettings(ref Lpshfoldercustomsettings pfcs, string pszPath, uint dwReadWrite);
+        private static extern uint SHGetSetFolderCustomSettings(ref Lpshfoldercustomsettings pfcs, string pszPath, uint dwReadWrite);
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
         private struct Lpshfoldercustomsettings
         {
@@ -214,7 +226,7 @@ namespace Change_Icon
                     var filePaths = Directory.GetFiles(Folder_textBox.Text);
                     foreach (var filePath in filePaths)
                     {
-                        var extension = Path.GetExtension(filePath);
+                        var extension = GetExtension(filePath);
                         if (extension != null && (extension.Equals(".ini") || extension.Equals(".ico")))
                         {
                             try
@@ -231,7 +243,7 @@ namespace Change_Icon
                 }
 
                 var ti =
-                    $@"{Folder_textBox.Text}\{Path.ChangeExtension(Path.GetFileName(Icone_textBox.Text), "ico")}";
+                    $@"{Folder_textBox.Text}\{ChangeExtension(GetFileName(Icone_textBox.Text), "ico")}";
                 string iconS;
                 if (File.Exists(ti))
                 {
@@ -240,7 +252,7 @@ namespace Change_Icon
 
                 else
                 {
-                    var s = Path.GetExtension(Icone_textBox.Text);
+                    var s = GetExtension(Icone_textBox.Text);
                     if (s != null && s.Equals("*.dll"))
                     {
                         iconS = Icone_textBox.Text;
@@ -248,21 +260,21 @@ namespace Change_Icon
 
                     else
                     {
-                        var file = Path.GetFileNameWithoutExtension(Icone_textBox.Text);
-                        var fol = Path.GetTempPath();
-                        var exte = Path.GetExtension(Icone_textBox.Text);
-                        //var tt = $@"{fol}{file + mRnd}{exte}";
-                        //Path.GetTempPath() + Path.ChangeExtension(Path.GetFileName(Icone_textBox.Text) + mRnd, "ico")
+                        var file = GetFileNameWithoutExtension(Icone_textBox.Text);
+                        var fol = GetTempPath();
+                        var exte = GetExtension(Icone_textBox.Text);
+                        //var tt = $@"{fol}{file + _mRnd}{exte}";
+                        //Path.GetTempPath() + Path.ChangeExtension(Path.GetFileName(Icone_textBox.Text) + _mRnd, "ico")
                         //? tmpSource : Icone_textBox.Text;
-                        var tmpSource = Path.ChangeExtension($@"{fol}{file + mRnd}{exte}", "ico");
-                        var tmpSource2 = Path.GetTempPath() + Path.ChangeExtension(Path.GetFileName(Icone_textBox.Text), "ico");
+                        var tmpSource = ChangeExtension($@"{fol}{file + _mRnd}{exte}", "ico");
+                        var tmpSource2 = GetTempPath() + ChangeExtension(GetFileName(Icone_textBox.Text), "ico");
                         string sourceFile;
 
                         if(File.Exists(tmpSource)) sourceFile = tmpSource;                  
                         else if (File.Exists(tmpSource2)) sourceFile = tmpSource2;
                         else sourceFile = Icone_textBox.Text;
      
-                        iconS = $@"{Folder_textBox.Text}\{Path.GetFileName(sourceFile)}";
+                        iconS = $@"{Folder_textBox.Text}\{GetFileName(sourceFile)}";
                         File.Copy(sourceFile, iconS, true);
                     }
                 }
@@ -277,7 +289,7 @@ namespace Change_Icon
                 {
                     dwSize = (uint)iconS.Length,
                     dwMask = fcsmIconfile,
-                    pszIconFile = Path.GetFileName(iconS),
+                    pszIconFile = GetFileName(iconS),
                     cchIconFile = 0,
 
                     iIconIndex = 0
@@ -285,7 +297,7 @@ namespace Change_Icon
 
                 SHGetSetFolderCustomSettings(ref folderSettings, Folder_textBox.Text, fcsForcewrite);
                 MessageBox.Show(@"Done", @"OK");
-                Application.Exit();
+                //Application.Exit();
             }
         }
 
@@ -303,7 +315,7 @@ namespace Change_Icon
                 var find = false;
                 foreach (var filePath in filePaths)
                 {
-                    var extension = Path.GetExtension(filePath);
+                    var extension = GetExtension(filePath);
                     if (extension == null || (!extension.Equals(".ini") && !extension.Equals(".ico"))) continue;
                     find = true;
                     File.Delete(filePath);
@@ -319,14 +331,21 @@ namespace Change_Icon
         private void Icon_Change_FormClosed(object sender, FormClosedEventArgs e)
         {
             //general cleanup
-            GC.SuppressFinalize(this);
-            foreach (var pic in _pics)
+            try
             {
-                if (File.Exists(Path.ChangeExtension(pic, "png"))) File.Delete(Path.ChangeExtension(pic, "png"));
-                if (File.Exists(Path.ChangeExtension(pic, "bmp"))) File.Delete(Path.ChangeExtension(pic, "bmp"));
-                if (File.Exists(Path.ChangeExtension(pic, "jpg"))) File.Delete(Path.ChangeExtension(pic, "jpg"));
-                if (File.Exists(Path.ChangeExtension(pic, "jpeg"))) File.Delete(Path.ChangeExtension(pic, "jpeg"));
-                if (File.Exists(Path.ChangeExtension(pic, "ico"))) File.Delete(Path.ChangeExtension(pic, "ico"));
+                GC.SuppressFinalize(this);
+                foreach (var pic in _pics)
+                {
+                    if (File.Exists(ChangeExtension(pic, "png"))) File.Delete(ChangeExtension(pic, "png"));
+                    if (File.Exists(ChangeExtension(pic, "bmp"))) File.Delete(ChangeExtension(pic, "bmp"));
+                    if (File.Exists(ChangeExtension(pic, "jpg"))) File.Delete(ChangeExtension(pic, "jpg"));
+                    if (File.Exists(ChangeExtension(pic, "jpeg"))) File.Delete(ChangeExtension(pic, "jpeg"));
+                    if (File.Exists(ChangeExtension(pic, "ico"))) File.Delete(ChangeExtension(pic, "ico"));
+                }
+            }
+            catch (Exception exp)
+            {
+                MessageBox.Show(exp.Message);
             }
         }
     }
