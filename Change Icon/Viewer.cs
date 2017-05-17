@@ -16,7 +16,7 @@ namespace Change_Icon
             InitializeComponent();
             this.name = name;
         }
-        public string _name { get; set; }
+        public bool exit { get; set; }
 
         public class IconListViewItem : ListViewItem
         {
@@ -78,20 +78,27 @@ namespace Change_Icon
 
             if (listView1.SelectedIndices.Count <= 0)
             {
+                //exit = true;
                 return;
             }
             int intselectedindex = listView1.SelectedIndices[0];
             if (intselectedindex >= 0)
             {
-                var tt = listView1.FocusedItem.Index;                
+                //var tt = listView1.FocusedItem.Index;                
                 IconListViewItem item = listView1.SelectedItems[0] as IconListViewItem;
                 if (item != null)
                 {
                     var bit = item.Bitmap;
                     bit.Save(_path, ImageFormat.Png);
+                    //exit = false;
                 }
                 Dispose();
             }
+        }
+
+        private void Viewer_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            exit = listView1.SelectedIndices.Count <= 0;
         }
     }
 }

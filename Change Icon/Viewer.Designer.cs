@@ -57,6 +57,7 @@
             this.Controls.Add(this.listView1);
             this.Name = "Viewer";
             this.Text = "Viewer";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Viewer_FormClosing);
             this.ResumeLayout(false);
 
         }
