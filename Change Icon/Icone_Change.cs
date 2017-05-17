@@ -151,7 +151,7 @@ namespace Change_Icon
                                         viewerList.Items.Add(item);
                                     }
                                     viewer.ShowDialog();
-                                    var exit = viewer.exit;
+                                    var exit = viewer.Exit;
                                     viewerList.EndUpdate();
                                     if (!exit)
                                     {
