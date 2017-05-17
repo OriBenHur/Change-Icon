@@ -10,13 +10,13 @@ namespace Change_Icon
 {
     public partial class Viewer : Form
     {
-        private string name;
+        private readonly string _name;
         public Viewer(string name)
         {
             InitializeComponent();
-            this.name = name;
+            _name = name;
         }
-        public bool exit { get; set; }
+        public bool Exit { get; private set; }
 
         public class IconListViewItem : ListViewItem
         {
@@ -33,10 +33,7 @@ namespace Change_Icon
             e.Graphics.CompositingQuality = CompositingQuality.HighQuality;
             e.Graphics.Clip = new Region(e.Bounds);
 
-            if (e.Item.Selected)
-                e.Graphics.FillRectangle(SystemBrushes.MenuHighlight, e.Bounds);
-            else
-                e.Graphics.FillRectangle(SystemBrushes.Window, e.Bounds);
+            e.Graphics.FillRectangle(e.Item.Selected ? SystemBrushes.MenuHighlight : SystemBrushes.Window, e.Bounds);
 
             if (item != null)
             {
@@ -63,16 +60,16 @@ namespace Change_Icon
 
         private void listView1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string _path = Path.GetTempPath() + Path.ChangeExtension(Path.GetFileName(name), @".png");
-            if (File.Exists(_path))
+            string path = Path.GetTempPath() + Path.ChangeExtension(Path.GetFileName(_name), @".png");
+            if (File.Exists(path))
             {
                 try
                 {
-                    File.Delete(_path);
+                    File.Delete(path);
                 }
                 catch
                 {
-                    MessageBox.Show(@"Faild to delete: " + _path);
+                    MessageBox.Show(@"Faild to delete: " + path);
                 }
             }
 
@@ -89,7 +86,7 @@ namespace Change_Icon
                 if (item != null)
                 {
                     var bit = item.Bitmap;
-                    bit.Save(_path, ImageFormat.Png);
+                    bit.Save(path, ImageFormat.Png);
                     //exit = false;
                 }
                 Dispose();
@@ -98,7 +95,7 @@ namespace Change_Icon
 
         private void Viewer_FormClosing(object sender, FormClosingEventArgs e)
         {
-            exit = listView1.SelectedIndices.Count <= 0;
+            Exit = listView1.SelectedIndices.Count <= 0;
         }
     }
 }
