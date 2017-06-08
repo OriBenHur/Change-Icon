@@ -4,7 +4,9 @@ using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
+using System.Xml;
 using static System.IO.File;
 using static System.IO.Path;
 // ReSharper disable AssignNullToNotNullAttribute
@@ -18,9 +20,74 @@ namespace Change_Icon
         public IconChange()
         {
             InitializeComponent();
-
+            
         }
 
+       //private void IconChange_Load(object sender, EventArgs e)
+       // {
+       //     NewVersion();
+       // }
+
+        private void NewVersion(bool isLoad)
+        {
+            var downloadUrl = @"";
+            Version newVersion = null;
+            var xmlUrl = @"https://onedrive.live.com/download?cid=D9DE3B3ACC374428&resid=D9DE3B3ACC374428%217999&authkey=ADJwQu1VOTfAOVg"; 
+            XmlTextReader reader = null;
+            try
+            {
+                reader = new XmlTextReader(xmlUrl);
+                reader.MoveToContent();
+                var elementName = @"";
+                if (reader.NodeType.Equals(XmlNodeType.Element) && reader.Name.Equals(@"Change_Icon"))
+                {
+                    while (reader.Read())
+                    {
+                        if (reader.NodeType.Equals(XmlNodeType.Element))
+                            elementName = reader.Name;
+
+                        else
+                        {
+                            if (reader.NodeType.Equals(XmlNodeType.Text) && reader.HasValue)
+                            {
+                                switch (elementName)
+                                {
+                                    case "version":
+                                        newVersion = new Version(reader.Value);
+                                        break;
+                                    case "url":
+                                        downloadUrl = reader.Value;
+                                        break;
+
+                                }
+                            }
+
+                        }
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.Message);
+            }
+            finally
+            {
+                reader?.Close();
+            }
+            Version appVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            if (appVersion.CompareTo(newVersion) < 0)
+            {
+                DialogResult result = MessageBox.Show(
+                    $@"Icon Change V.{newVersion} is out!{Environment.NewLine}Would You Like To Donwload It?", @"New Version is avlibale", MessageBoxButtons.YesNo);
+                if (result == DialogResult.Yes)
+                    System.Diagnostics.Process.Start(downloadUrl);
+            }
+            else
+            {
+                if (!isLoad)
+                    MessageBox.Show(@"No Are Running The Last Version.", @"No New Updates");
+            }
+        }
 
         //Global List that will hold all the chosen images (in the the current operation)
         private static readonly List<string> Pics;
@@ -351,7 +418,7 @@ namespace Change_Icon
             {
                 var filePaths = Directory.GetFiles(Folder_textBox.Text);
                 var find = false;
-                var iconfile="";
+                var iconfile = "";
                 var ini = $@"{Folder_textBox.Text}\desktop.ini";
                 if (Exists(ini))
                 {
@@ -420,6 +487,23 @@ namespace Change_Icon
             {
                 MessageBox.Show(exp.Message);
             }
+        }
+
+        private void checkForUpdatesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            NewVersion(false);
+        }
+
+
+        private void IconChange_Shown(object sender, EventArgs e)
+        {
+            void Action()
+            {
+                NewVersion(true);
+            }
+
+            var thread = new Thread(Action) { IsBackground = true };
+            thread.Start();
         }
     }
 }
