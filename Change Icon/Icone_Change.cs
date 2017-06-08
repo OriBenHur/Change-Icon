@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
-using System.Xml;
+using System.Xml.Linq;
 using static System.IO.File;
 using static System.IO.Path;
 // ReSharper disable AssignNullToNotNullAttribute
@@ -23,62 +23,41 @@ namespace Change_Icon
             
         }
 
-       //private void IconChange_Load(object sender, EventArgs e)
-       // {
-       //     NewVersion();
-       // }
+        //private void IconChange_Load(object sender, EventArgs e)
+        // {
+        //     NewVersion();
+        // }
 
         private void NewVersion(bool isLoad)
         {
             var downloadUrl = @"";
             Version newVersion = null;
-            var xmlUrl = @"https://onedrive.live.com/download?cid=D9DE3B3ACC374428&resid=D9DE3B3ACC374428%217999&authkey=ADJwQu1VOTfAOVg"; 
-            XmlTextReader reader = null;
+            var xmlUrl = @"https://onedrive.live.com/download?cid=D9DE3B3ACC374428&resid=D9DE3B3ACC374428%217999&authkey=ADJwQu1VOTfAOVg";
+            Version appVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            var appName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
+            var doc = XDocument.Load(xmlUrl);
             try
             {
-                reader = new XmlTextReader(xmlUrl);
-                reader.MoveToContent();
-                var elementName = @"";
-                if (reader.NodeType.Equals(XmlNodeType.Element) && reader.Name.Equals(@"Change_Icon"))
+                foreach (var dm in doc.Descendants(appName))
                 {
-                    while (reader.Read())
-                    {
-                        if (reader.NodeType.Equals(XmlNodeType.Element))
-                            elementName = reader.Name;
+                    var versionElement = dm.Element(@"version");
+                    if (versionElement == null) continue;
+                    var urlelEment = dm.Element(@"url");
+                    if (urlelEment == null) continue;
+                    newVersion = new Version(versionElement.Value);
+                    downloadUrl = urlelEment.Value;
 
-                        else
-                        {
-                            if (reader.NodeType.Equals(XmlNodeType.Text) && reader.HasValue)
-                            {
-                                switch (elementName)
-                                {
-                                    case "version":
-                                        newVersion = new Version(reader.Value);
-                                        break;
-                                    case "url":
-                                        downloadUrl = reader.Value;
-                                        break;
-
-                                }
-                            }
-
-                        }
-                    }
                 }
             }
             catch (Exception exception)
             {
                 MessageBox.Show(exception.Message);
             }
-            finally
-            {
-                reader?.Close();
-            }
-            Version appVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+
             if (appVersion.CompareTo(newVersion) < 0)
             {
-                DialogResult result = MessageBox.Show(
-                    $@"Icon Change V.{newVersion} is out!{Environment.NewLine}Would You Like To Donwload It?", @"New Version is avlibale", MessageBoxButtons.YesNo);
+                var result = MessageBox.Show(
+                    $@"{appName} v.{newVersion} is out!{Environment.NewLine}Would You Like To Donwload It?", @"New Version is avlibale", MessageBoxButtons.YesNo);
                 if (result == DialogResult.Yes)
                     System.Diagnostics.Process.Start(downloadUrl);
             }
@@ -88,7 +67,6 @@ namespace Change_Icon
                     MessageBox.Show(@"No Are Running The Last Version.", @"No New Updates");
             }
         }
-
         //Global List that will hold all the chosen images (in the the current operation)
         private static readonly List<string> Pics;
 
