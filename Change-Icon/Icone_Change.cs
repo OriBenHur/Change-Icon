@@ -42,7 +42,7 @@ namespace Change_Icon
             var xmlUrl = @"https://onedrive.live.com/download?cid=D9DE3B3ACC374428&resid=D9DE3B3ACC374428%217999&authkey=ADJwQu1VOTfAOVg";
             Version appVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             var appName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
-            
+
             try
             {
                 var doc = XDocument.Load(xmlUrl);
@@ -275,23 +275,23 @@ namespace Change_Icon
                     Folder_Error.SetError(Icone_textBox, "You must selcet folder first");
                     break;
                 default:
-                    //if (Icone_textBox.Text == "")
-                    //{
-                    //    Folder_Error.SetIconPadding(Icone_textBox, 100);
-                    //    Folder_Error.SetError(Icone_textBox, @"Input The Seriese \ Movie Name in the icon TextBox");
-                    //}
+                    Icone_textBox.Text = GetVideoName();
+                    if (Icone_textBox.Text == "")
+                    {
+                        Folder_Error.SetIconPadding(Icone_textBox, 100);
+                        Folder_Error.SetError(Icone_textBox, @"Input The Seriese \ Movie Name in the icon TextBox");
+                    }
 
-                    //else
-                    //{
-
+                    else
+                    {
                         Size = new Size(388, 301);
                         pictureBox1.Location = new Point(50, 116);
                         Reset_Folder.Location = new Point(193, 221);
                         Set.Location = new Point(275, 221);
                         Movie_radioButton.Visible = true;
                         TV_radioButton.Visible = true;
-                        Icone_textBox.Text = GetVideoName();
-                   // }
+                    }
+
 
                     break;
             }
@@ -311,6 +311,7 @@ namespace Change_Icon
                     break;
                 }
             }
+            if (video == null) return "";
             var match = Regex.Match(video,
                 @"^(?<series>.*)?((.(19|20)[0-9][0-9])|(.[sS][0-9]{2}[eE][0-9]{2}))(?<ext>.*)$",
                 RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.Singleline);
@@ -580,7 +581,7 @@ namespace Change_Icon
             thread.Start();
         }
 
-        
+
         private void TV_radioButton_CheckedChanged(object sender, EventArgs e)
         {
             pictureBox1.Visible = true;
@@ -601,8 +602,8 @@ namespace Change_Icon
             {
                 //if (video.Name.ToLower().Replace(".","").Equals(iconName.ToLower()))
                 //{
-                    backgroundWorker1.RunWorkerAsync(video.PosterPath);
-                    break;
+                backgroundWorker1.RunWorkerAsync(video.PosterPath);
+                break;
 
                 //}
             }
@@ -635,9 +636,9 @@ namespace Change_Icon
 
         private void Process(string iconPath)
         {
-            
+
             var icofile = GetTempPath() + ChangeExtension(GetFileName(iconPath), "png");
-            
+
             var extension = GetExtension(iconPath);
             var destfile = ChangeExtension(iconPath, GetExtension(icofile));
             if (extension == null) return;
@@ -694,7 +695,7 @@ namespace Change_Icon
             Process(iconPath);
             if (Icone_textBox.InvokeRequired)
             {
-                Icone_textBox.Invoke(new MethodInvoker(delegate {Icone_textBox.Text = iconPath; }));
+                Icone_textBox.Invoke(new MethodInvoker(delegate { Icone_textBox.Text = iconPath; }));
             }
 
         }
