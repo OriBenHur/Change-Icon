@@ -1,12 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.IO;
+using System.Linq;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using TMDbLib.Client;
+using TMDbLib.Objects.Search;
 using static System.IO.File;
 using static System.IO.Path;
 // ReSharper disable AssignNullToNotNullAttribute
@@ -20,7 +26,7 @@ namespace Change_Icon
         public IconChange()
         {
             InitializeComponent();
-            
+
         }
 
         //private void IconChange_Load(object sender, EventArgs e)
@@ -35,9 +41,10 @@ namespace Change_Icon
             var xmlUrl = @"https://onedrive.live.com/download?cid=D9DE3B3ACC374428&resid=D9DE3B3ACC374428%217999&authkey=ADJwQu1VOTfAOVg";
             Version appVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             var appName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
-            var doc = XDocument.Load(xmlUrl);
+            
             try
             {
+                var doc = XDocument.Load(xmlUrl);
                 foreach (var dm in doc.Descendants(appName))
                 {
                     var versionElement = dm.Element(@"version");
@@ -57,14 +64,14 @@ namespace Change_Icon
             if (appVersion.CompareTo(newVersion) < 0)
             {
                 var result = MessageBox.Show(
-                    $@"{appName} v.{newVersion} is out!{Environment.NewLine}Would You Like To Donwload It?", @"New Version is avlibale", MessageBoxButtons.YesNo);
+                    $@"{appName.Replace('_', ' ')} v.{newVersion} is out!{Environment.NewLine}Would You Like To Download It?", @"New Version is avlibale", MessageBoxButtons.YesNo);
                 if (result == DialogResult.Yes)
                     System.Diagnostics.Process.Start(downloadUrl);
             }
             else
             {
                 if (!isLoad)
-                    MessageBox.Show(@"No Are Running The Last Version.", @"No New Updates");
+                    MessageBox.Show(@"You Are Running The Last Version.", @"No New Updates");
             }
         }
         //Global List that will hold all the chosen images (in the the current operation)
@@ -109,15 +116,23 @@ namespace Change_Icon
                     Folder_Error.SetError(Icone_textBox, "You must selcet folder first");
                     break;
                 default:
+                    Size = new Size(388, 282);
+                    pictureBox1.Location = new Point(50, 103);
+                    Reset_Folder.Location = new Point(193, 208);
+                    Set.Location = new Point(275, 2081);
+                    Movie_radioButton.Checked = false;
+                    TV_radioButton.Checked = false;
+                    Movie_radioButton.Visible = false;
+                    TV_radioButton.Visible = false;
+                    pictureBox1.Visible = true;
+                    pictureBox1.Image = null;
+
                     var myIcon = new OpenFileDialog
                     {
                         Filter =
                             @"Icon files (*.ico)| *.ico|Common image files (*.jpg, *.jpeg, *.png, *.bmp)|*.jpg; *.jpeg; *.png; *.bmp|Resource Files (*.dll, *.exe)|*.dll; *.exe",
                         FilterIndex = 1,
                         RestoreDirectory = false
-
-
-
                     };
                     var result = myIcon.ShowDialog();
 
@@ -239,8 +254,71 @@ namespace Change_Icon
                     break;
             }
         }
+        private static readonly ApiKeys ApiKeys = new ApiKeys();
+        private static readonly string TmdBapikey = ApiKeys.TmdBapikey;
+        private static readonly TMDbClient Tmdb = new TMDbClient(TmdBapikey);
+        private const string BaseUrl = "https://image.tmdb.org/t/p/w342";
+
+        private void imdb_button_Click(object sender, EventArgs e)
+        {
+            Folder_Error.Clear();
+            switch (Folder_textBox.Text)
+            {
+                case "":
+                    Folder_Error.SetIconPadding(Icone_textBox, 100);
+                    Folder_Error.SetError(Icone_textBox, "You must selcet folder first");
+                    break;
+                default:
+                    //if (Icone_textBox.Text == "")
+                    //{
+                    //    Folder_Error.SetIconPadding(Icone_textBox, 100);
+                    //    Folder_Error.SetError(Icone_textBox, @"Input The Seriese \ Movie Name in the icon TextBox");
+                    //}
+
+                    //else
+                    //{
+
+                        Size = new Size(388, 301);
+                        pictureBox1.Location = new Point(50, 116);
+                        Reset_Folder.Location = new Point(193, 221);
+                        Set.Location = new Point(275, 221);
+                        Movie_radioButton.Visible = true;
+                        TV_radioButton.Visible = true;
+                        Icone_textBox.Text = GetVideoName();
+                   // }
+
+                    break;
+            }
+        }
+
+        private string GetVideoName()
+        {
+            DirectoryInfo di = new DirectoryInfo(Folder_textBox.Text);
+
+            string video = null;
+            foreach (var fi in di.GetFiles("*", SearchOption.AllDirectories))
+            {
+                var name = fi.Name;
+                if (GetExtension(name) == ".mp4" || GetExtension(name) == ".mkv" || GetExtension(name) == ".avi" || GetExtension(name) == ".srt")
+                {
+                    video = name;
+                    break;
+                }
+            }
+            var match = Regex.Match(video,
+                @"^(?<series>.*)?((.(19|20)[0-9][0-9])|(.[sS][0-9]{2}[eE][0-9]{2}))(?<ext>.*)$",
+                RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.Singleline);
+
+            var videoName = match.Groups["series"].Value;
+            videoName = Regex.Replace(videoName, ".(19|20)[0-9][0-9]", String.Empty);
+            return videoName;
+        }
 
 
+        public static string CleanString(string str, bool clean = true)
+        {
+            return clean ? str.Replace(".", " ") : str.Replace(" ", ".");
+        }
         [DllImport("Shell32.dll", CharSet = CharSet.Auto)]
         private static extern uint SHGetSetFolderCustomSettings(ref Lpshfoldercustomsettings pfcs, string pszPath, uint dwReadWrite);
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
@@ -377,6 +455,18 @@ namespace Change_Icon
                     MessageBox.Show(@"Done", @"OK");
                     Folder_textBox.Text = "";
                     Icone_textBox.Text = "";
+                    Size = new Size(388, 282);
+                    pictureBox1.Location = new Point(50, 103);
+                    Reset_Folder.Location = new Point(193, 208);
+                    Set.Location = new Point(275, 208);
+                    TV_radioButton.CheckedChanged -= TV_radioButton_CheckedChanged;
+                    TV_radioButton.Checked = false;
+                    TV_radioButton.CheckedChanged += TV_radioButton_CheckedChanged;
+                    Movie_radioButton.CheckedChanged -= Movie_radioButton_CheckedChanged;
+                    Movie_radioButton.Checked = false;
+                    Movie_radioButton.CheckedChanged += Movie_radioButton_CheckedChanged;
+                    Movie_radioButton.Visible = false;
+                    TV_radioButton.Visible = false;
                     if (pictureBox1.Image == null) return;
                     pictureBox1.Image.Dispose();
                     pictureBox1.Image = null;
@@ -482,6 +572,108 @@ namespace Change_Icon
 
             var thread = new Thread(Action) { IsBackground = true };
             thread.Start();
+        }
+
+        
+        private void TV_radioButton_CheckedChanged(object sender, EventArgs e)
+        {
+            pictureBox1.Visible = true;
+            pictureBox1.Image = Properties.Resources.preloader;
+            var original = Icone_textBox.Text;
+            var iconName = CleanString(original.Trim());
+            var results = Tmdb.SearchTvShowAsync(iconName).Result;
+
+            foreach (var video in results.Results)
+            {
+                //if (video.Name.ToLower().Replace(".","").Equals(iconName.ToLower()))
+                //{
+                    backgroundWorker1.RunWorkerAsync(video.PosterPath);
+                    break;
+
+                //}
+            }
+
+        }
+
+        private void Movie_radioButton_CheckedChanged(object sender, EventArgs e)
+        {
+            pictureBox1.Visible = true;
+            pictureBox1.Image = Properties.Resources.preloader;
+            var original = Icone_textBox.Text;
+            var iconName = CleanString(original.Trim());
+            var results = Tmdb.SearchMovieAsync(iconName).Result;
+            foreach (var video in results.Results)
+            {
+                //if (!video.Title.ToLower().Equals(iconName.ToLower())) continue;
+                backgroundWorker1.RunWorkerAsync(video.PosterPath);
+                break;
+            }
+        }
+
+        private void Process(string iconPath)
+        {
+            
+            var icofile = GetTempPath() + ChangeExtension(GetFileName(iconPath), "png");
+            
+            var extension = GetExtension(iconPath);
+            var destfile = ChangeExtension(iconPath, GetExtension(icofile));
+            if (extension == null) return;
+            extension = extension.ToLower();
+            if (extension.Equals(".jpg"))
+            {
+                try
+                {
+                    if (Exists(destfile))
+                    {
+                        SetAttributes(destfile, FileAttributes.Normal);
+                        Delete(destfile);
+                    }
+                    Copy(iconPath, destfile, true);
+                    SetAttributes(destfile, FileAttributes.Normal);
+
+                    if (!IconConvert.ConvertToIcon(destfile, ChangeExtension(destfile, "ico"))) Dispose();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+            }
+
+            if (Exists(destfile))
+            {
+                Pics.Add(destfile);
+                using (var temp = new Bitmap(destfile))
+                    pictureBox1.Image = new Bitmap(temp);
+            }
+
+            else
+            {
+                if (!extension.Equals(".dll"))
+                {
+                    destfile = iconPath;
+                    var img = Image.FromFile(destfile);
+                    pictureBox1.Image = img;
+                }
+                else Icone_textBox.Text = "";
+            }
+        }
+
+        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
+        {
+            var original = Icone_textBox.Text;
+            var iconName = CleanString(original.Trim());
+            var iconPath = GetTempPath() + CleanString(iconName, false) + ".jpg";
+            using (var client = new WebClient())
+            {
+                client.DownloadFile(BaseUrl + e.Argument, iconPath);
+            }
+
+            Process(iconPath);
+            if (Icone_textBox.InvokeRequired)
+            {
+                Icone_textBox.Invoke(new MethodInvoker(delegate {Icone_textBox.Text = iconPath; }));
+            }
+
         }
     }
 }
