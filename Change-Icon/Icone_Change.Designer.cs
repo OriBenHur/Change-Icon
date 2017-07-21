@@ -40,15 +40,19 @@ namespace Change_Icon
             this.Icon_label = new System.Windows.Forms.Label();
             this.Icon_button = new System.Windows.Forms.Button();
             this.Set = new System.Windows.Forms.Button();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.Folder_Error = new System.Windows.Forms.ErrorProvider(this.components);
             this.Reset_Folder = new System.Windows.Forms.Button();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.checkForUpdatesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.imdb_button = new System.Windows.Forms.Button();
+            this.Movie_radioButton = new System.Windows.Forms.RadioButton();
+            this.TV_radioButton = new System.Windows.Forms.RadioButton();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             ((System.ComponentModel.ISupportInitialize)(this.Folder_Error)).BeginInit();
             this.menuStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // Folder_textBox
@@ -97,9 +101,9 @@ namespace Change_Icon
             // 
             this.Icon_button.Location = new System.Drawing.Point(246, 63);
             this.Icon_button.Name = "Icon_button";
-            this.Icon_button.Size = new System.Drawing.Size(96, 23);
+            this.Icon_button.Size = new System.Drawing.Size(46, 23);
             this.Icon_button.TabIndex = 6;
-            this.Icon_button.Text = "Browse Icon";
+            this.Icon_button.Text = "Local";
             this.Icon_button.UseVisualStyleBackColor = true;
             this.Icon_button.Click += new System.EventHandler(this.Icon_button_Click);
             // 
@@ -112,15 +116,6 @@ namespace Change_Icon
             this.Set.Text = "Set";
             this.Set.UseVisualStyleBackColor = true;
             this.Set.Click += new System.EventHandler(this.Set_Click);
-            // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Location = new System.Drawing.Point(50, 103);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(128, 128);
-            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBox1.TabIndex = 8;
-            this.pictureBox1.TabStop = false;
             // 
             // Folder_Error
             // 
@@ -161,6 +156,56 @@ namespace Change_Icon
             this.checkForUpdatesToolStripMenuItem.Text = "Check For Updates";
             this.checkForUpdatesToolStripMenuItem.Click += new System.EventHandler(this.checkForUpdatesToolStripMenuItem_Click);
             // 
+            // imdb_button
+            // 
+            this.imdb_button.Location = new System.Drawing.Point(295, 63);
+            this.imdb_button.Name = "imdb_button";
+            this.imdb_button.Size = new System.Drawing.Size(46, 23);
+            this.imdb_button.TabIndex = 11;
+            this.imdb_button.Text = "Imdb";
+            this.imdb_button.UseVisualStyleBackColor = true;
+            this.imdb_button.Click += new System.EventHandler(this.imdb_button_Click);
+            // 
+            // Movie_radioButton
+            // 
+            this.Movie_radioButton.AutoSize = true;
+            this.Movie_radioButton.Location = new System.Drawing.Point(50, 90);
+            this.Movie_radioButton.Name = "Movie_radioButton";
+            this.Movie_radioButton.Size = new System.Drawing.Size(54, 17);
+            this.Movie_radioButton.TabIndex = 12;
+            this.Movie_radioButton.TabStop = true;
+            this.Movie_radioButton.Text = "Movie";
+            this.Movie_radioButton.UseVisualStyleBackColor = true;
+            this.Movie_radioButton.Visible = false;
+            this.Movie_radioButton.CheckedChanged += new System.EventHandler(this.Movie_radioButton_CheckedChanged);
+            // 
+            // TV_radioButton
+            // 
+            this.TV_radioButton.AutoSize = true;
+            this.TV_radioButton.Location = new System.Drawing.Point(109, 90);
+            this.TV_radioButton.Name = "TV_radioButton";
+            this.TV_radioButton.Size = new System.Drawing.Size(69, 17);
+            this.TV_radioButton.TabIndex = 13;
+            this.TV_radioButton.TabStop = true;
+            this.TV_radioButton.Text = "TV Show";
+            this.TV_radioButton.UseVisualStyleBackColor = true;
+            this.TV_radioButton.Visible = false;
+            this.TV_radioButton.CheckedChanged += new System.EventHandler(this.TV_radioButton_CheckedChanged);
+            // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Location = new System.Drawing.Point(50, 103);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(128, 128);
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox1.TabIndex = 8;
+            this.pictureBox1.TabStop = false;
+            this.pictureBox1.Visible = false;
+            // 
+            // backgroundWorker1
+            // 
+            this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
+            // 
             // IconChange
             // 
             this.AccessibleRole = System.Windows.Forms.AccessibleRole.Window;
@@ -168,6 +213,9 @@ namespace Change_Icon
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(368, 239);
+            this.Controls.Add(this.TV_radioButton);
+            this.Controls.Add(this.Movie_radioButton);
+            this.Controls.Add(this.imdb_button);
             this.Controls.Add(this.Reset_Folder);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.Set);
@@ -186,10 +234,10 @@ namespace Change_Icon
             this.Text = "Icon Change";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Icon_Change_FormClosed);
             this.Shown += new System.EventHandler(this.IconChange_Shown);
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.Folder_Error)).EndInit();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -210,7 +258,10 @@ namespace Change_Icon
         private MenuStrip menuStrip1;
         private ToolStripMenuItem aboutToolStripMenuItem;
         private ToolStripMenuItem checkForUpdatesToolStripMenuItem;
-        
+        private Button imdb_button;
+        private RadioButton TV_radioButton;
+        private RadioButton Movie_radioButton;
+        private BackgroundWorker backgroundWorker1;
     }
 }
 
