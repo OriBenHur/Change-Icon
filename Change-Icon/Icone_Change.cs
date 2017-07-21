@@ -38,6 +38,7 @@ namespace Change_Icon
         {
             var downloadUrl = @"";
             Version newVersion = null;
+            XElement change = null;
             var xmlUrl = @"https://onedrive.live.com/download?cid=D9DE3B3ACC374428&resid=D9DE3B3ACC374428%217999&authkey=ADJwQu1VOTfAOVg";
             Version appVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             var appName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
@@ -53,6 +54,7 @@ namespace Change_Icon
                     if (urlelEment == null) continue;
                     newVersion = new Version(versionElement.Value);
                     downloadUrl = urlelEment.Value;
+                    change = dm.Element(@"change_log");
 
                 }
             }
@@ -63,8 +65,12 @@ namespace Change_Icon
 
             if (appVersion.CompareTo(newVersion) < 0)
             {
+                //Debug.Assert(change != null, "change != null");
+                if (change == null) return;
+                change.Value = change.Value;
                 var result = MessageBox.Show(
-                    $@"{appName.Replace('_', ' ')} v.{newVersion} is out!{Environment.NewLine}Would You Like To Download It?", @"New Version is avlibale", MessageBoxButtons.YesNo);
+                    $@"{appName.Replace('_', ' ')} v.{newVersion} is out!{Environment.NewLine}{change.Value}",
+                    @"New Version is avlibale", MessageBoxButtons.YesNo);
                 if (result == DialogResult.Yes)
                     System.Diagnostics.Process.Start(downloadUrl);
             }
@@ -582,7 +588,15 @@ namespace Change_Icon
             var original = Icone_textBox.Text;
             var iconName = CleanString(original.Trim());
             var results = Tmdb.SearchTvShowAsync(iconName).Result;
+            if (results.TotalResults < 1)
+            {
+                MessageBox.Show(@"Couldn't Find The Requested Artwork", @"Sorry");
+                pictureBox1.Image = null;
+                TV_radioButton.CheckedChanged -= TV_radioButton_CheckedChanged;
+                TV_radioButton.Checked = false;
+                TV_radioButton.CheckedChanged += TV_radioButton_CheckedChanged;
 
+            }
             foreach (var video in results.Results)
             {
                 //if (video.Name.ToLower().Replace(".","").Equals(iconName.ToLower()))
@@ -602,6 +616,15 @@ namespace Change_Icon
             var original = Icone_textBox.Text;
             var iconName = CleanString(original.Trim());
             var results = Tmdb.SearchMovieAsync(iconName).Result;
+            if (results.TotalResults < 1)
+            {
+                MessageBox.Show(@"Couldn't Find The Requested Artwork", @"Sorry");
+                pictureBox1.Image = null;
+                Movie_radioButton.CheckedChanged -= Movie_radioButton_CheckedChanged;
+                Movie_radioButton.Checked = false;
+                Movie_radioButton.CheckedChanged += Movie_radioButton_CheckedChanged;
+
+            }
             foreach (var video in results.Results)
             {
                 //if (!video.Title.ToLower().Equals(iconName.ToLower())) continue;
