@@ -10,13 +10,10 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml.Linq;
-using Microsoft.Win32;
 using TMDbLib.Client;
 using static System.IO.File;
 using static System.IO.Path;
 // ReSharper disable AssignNullToNotNullAttribute
-
-//using TsudaKageyu;
 
 namespace Change_Icon
 {
@@ -779,8 +776,8 @@ namespace Change_Icon
                 var downloadUrl = @"";
                 Version newVersion = null;
                 XElement change = null;
-                var xmlUrl = @"https://oribenhur.github.io/update.xml";
-                Version appVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+                const string xmlUrl = @"https://oribenhur.github.io/update.xml";
+                var appVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
                 var appName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
 
                 try

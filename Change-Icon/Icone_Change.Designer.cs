@@ -123,6 +123,7 @@ namespace Change_Icon
             // 
             // Folder_Error
             // 
+            this.Folder_Error.BlinkStyle = System.Windows.Forms.ErrorBlinkStyle.AlwaysBlink;
             this.Folder_Error.ContainerControl = this;
             // 
             // Reset_Folder
@@ -220,6 +221,7 @@ namespace Change_Icon
             // 
             // Info
             // 
+            this.Info.BlinkStyle = System.Windows.Forms.ErrorBlinkStyle.AlwaysBlink;
             this.Info.ContainerControl = this;
             this.Info.Icon = ((System.Drawing.Icon)(resources.GetObject("Info.Icon")));
             // 
