@@ -49,10 +49,14 @@ namespace Change_Icon
             this.Movie_radioButton = new System.Windows.Forms.RadioButton();
             this.TV_radioButton = new System.Windows.Forms.RadioButton();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
-            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+            this.IMDB_backgroundWorker = new System.ComponentModel.BackgroundWorker();
+            this.Local_backgroundWorker = new System.ComponentModel.BackgroundWorker();
+            this.CeckUpdate = new System.ComponentModel.BackgroundWorker();
+            this.Info = new System.Windows.Forms.ErrorProvider(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.Folder_Error)).BeginInit();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Info)).BeginInit();
             this.SuspendLayout();
             // 
             // Folder_textBox
@@ -202,9 +206,22 @@ namespace Change_Icon
             this.pictureBox1.TabStop = false;
             this.pictureBox1.Visible = false;
             // 
-            // backgroundWorker1
+            // IMDB_backgroundWorker
             // 
-            this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
+            this.IMDB_backgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.IMDB_backgroundWorker_DoWork);
+            // 
+            // Local_backgroundWorker
+            // 
+            this.Local_backgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.Local_backgroundWorker_DoWork);
+            // 
+            // CeckUpdate
+            // 
+            this.CeckUpdate.DoWork += new System.ComponentModel.DoWorkEventHandler(this.CeckUpdate_DoWork);
+            // 
+            // Info
+            // 
+            this.Info.ContainerControl = this;
+            this.Info.Icon = ((System.Drawing.Icon)(resources.GetObject("Info.Icon")));
             // 
             // IconChange
             // 
@@ -238,6 +255,7 @@ namespace Change_Icon
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.Info)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -261,7 +279,10 @@ namespace Change_Icon
         private Button imdb_button;
         private RadioButton TV_radioButton;
         private RadioButton Movie_radioButton;
-        private BackgroundWorker backgroundWorker1;
+        private BackgroundWorker IMDB_backgroundWorker;
+        private BackgroundWorker Local_backgroundWorker;
+        private BackgroundWorker CeckUpdate;
+        private ErrorProvider Info;
     }
 }
 
