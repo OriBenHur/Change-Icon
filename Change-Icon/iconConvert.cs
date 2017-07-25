@@ -42,7 +42,7 @@ namespace Change_Icon
                         {
                             newBitmap.Save(memoryStream, ImageFormat.Png);
                             var iconWriter = new BinaryWriter(output);
-                            if (output != null && GetIconWriter(iconWriter) != null)
+                            if (GetIconWriter(iconWriter) != null)
                             {
                                 // 0-1 reserved, 0
                                 iconWriter.Write((byte)0);
@@ -166,7 +166,7 @@ namespace Change_Icon
                     using (new Bitmap(img))
                     {
                         var extension = Path.GetExtension(inputPath);
-                        if (extension != null && !extension.Equals(".png"))
+                        if (!extension.Equals(".png"))
                             img.Save(In, ImageFormat.Png);
                     }
                 }

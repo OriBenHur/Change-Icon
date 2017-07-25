@@ -37,11 +37,11 @@ namespace Change_Icon
 
             if (item != null)
             {
-                int w = Math.Min(128, item.Bitmap.Width);
-                int h = Math.Min(128, item.Bitmap.Height);
+                var w = Math.Min(128, item.Bitmap.Width);
+                var h = Math.Min(128, item.Bitmap.Height);
 
-                int x = e.Bounds.X + (e.Bounds.Width - w) / 2;
-                int y = e.Bounds.Y + (e.Bounds.Height - h) / 2;
+                var x = e.Bounds.X + (e.Bounds.Width - w) / 2;
+                var y = e.Bounds.Y + (e.Bounds.Height - h) / 2;
                 var dstRect = new Rectangle(x, y, w, h);
                 var srcRect = new Rectangle(Point.Empty, item.Bitmap.Size);
 
@@ -60,7 +60,7 @@ namespace Change_Icon
 
         private void listView1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            string path = Path.GetTempPath() + Path.ChangeExtension(Path.GetFileName(_name), @".png");
+            var path = Path.GetTempPath() + Path.ChangeExtension(Path.GetFileName(_name), @".png");
             if (File.Exists(path))
             {
                 try
@@ -78,19 +78,17 @@ namespace Change_Icon
                 //exit = true;
                 return;
             }
-            int intselectedindex = listView1.SelectedIndices[0];
-            if (intselectedindex >= 0)
+            var intselectedindex = listView1.SelectedIndices[0];
+            if (intselectedindex < 0) return;
+            //var tt = listView1.FocusedItem.Index;                
+            IconListViewItem item = listView1.SelectedItems[0] as IconListViewItem;
+            if (item != null)
             {
-                //var tt = listView1.FocusedItem.Index;                
-                IconListViewItem item = listView1.SelectedItems[0] as IconListViewItem;
-                if (item != null)
-                {
-                    var bit = item.Bitmap;
-                    bit.Save(path, ImageFormat.Png);
-                    //exit = false;
-                }
-                Dispose();
+                var bit = item.Bitmap;
+                bit.Save(path, ImageFormat.Png);
+                //exit = false;
             }
+            Dispose();
         }
 
         private void Viewer_FormClosing(object sender, FormClosingEventArgs e)

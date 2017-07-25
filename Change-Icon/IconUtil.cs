@@ -45,12 +45,12 @@ namespace Change_Icon
             // Create a dynamic method to access Icon.iconData private field.
 
             var dm = new DynamicMethod(
-                "GetIconData", typeof(byte[]), new Type[] { typeof(Icon) }, typeof(Icon));
+                "GetIconData", typeof(byte[]), new[] { typeof(Icon) }, typeof(Icon));
             var fi = typeof(Icon).GetField(
                 "iconData", BindingFlags.Instance | BindingFlags.NonPublic);
             var gen = dm.GetILGenerator();
             gen.Emit(OpCodes.Ldarg_0);
-            gen.Emit(OpCodes.Ldfld, fi);
+            if (fi != null) gen.Emit(OpCodes.Ldfld, fi);
             gen.Emit(OpCodes.Ret);
 
             getIconData = (GetIconDataDelegate)dm.CreateDelegate(typeof(GetIconDataDelegate));
@@ -179,7 +179,7 @@ namespace Change_Icon
                 return BitConverter.ToUInt16(data, 12);
             }
 
-            throw new ArgumentException("The icon is corrupt. Couldn't read the header.", "icon");
+            throw new ArgumentException(@"The icon is corrupt. Couldn't read the header.", nameof(icon));
         }
 
         private static byte[] GetIconData(Icon icon)

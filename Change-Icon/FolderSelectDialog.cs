@@ -22,14 +22,16 @@ namespace Change_Icon
 		/// </summary>
 		public FolderSelectDialog()
 		{
-			ofd = new OpenFileDialog();
+		    ofd = new OpenFileDialog
+		    {
+		        Filter = @"Folders|\n",
+		        AddExtension = false,
+		        CheckFileExists = false,
+		        DereferenceLinks = true,
+		        Multiselect = false
+		    };
 
-			ofd.Filter = "Folders|\n";
-			ofd.AddExtension = false;
-			ofd.CheckFileExists = false;
-			ofd.DereferenceLinks = true;
-			ofd.Multiselect = false;
-            
+
 		}
 
 		#region Properties
@@ -80,7 +82,7 @@ namespace Change_Icon
 		/// <returns>True if the user presses OK else false</returns>
 		public bool ShowDialog(IntPtr hWndOwner)
 		{
-			var flag = false;
+			bool flag;
 
 			if (Environment.OSVersion.Version.Major >= 6)
 			{
@@ -112,11 +114,13 @@ namespace Change_Icon
 			}
 			else
 			{
-				var fbd = new FolderBrowserDialog();
-				fbd.Description = Title;
-				fbd.SelectedPath = InitialDirectory;
-				fbd.ShowNewFolderButton = false;
-				if (fbd.ShowDialog(new WindowWrapper(hWndOwner)) != DialogResult.OK) return false;
+			    var fbd = new FolderBrowserDialog
+			    {
+			        Description = Title,
+			        SelectedPath = InitialDirectory,
+			        ShowNewFolderButton = false
+			    };
+			    if (fbd.ShowDialog(new WindowWrapper(hWndOwner)) != DialogResult.OK) return false;
 				ofd.FileName = fbd.SelectedPath;
 				flag = true;
 			}
@@ -138,18 +142,13 @@ namespace Change_Icon
 		/// <param name="handle">Handle to wrap</param>
 		public WindowWrapper(IntPtr handle)
 		{
-			_hwnd = handle;
+			Handle = handle;
 		}
 
 		/// <summary>
 		/// Original ptr
 		/// </summary>
-		public IntPtr Handle
-		{
-			get { return _hwnd; }
-		}
-
-		private IntPtr _hwnd;
+		public IntPtr Handle { get; }
 	}
 
 }
