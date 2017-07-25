@@ -17,7 +17,7 @@ namespace Change_Icon
                 IntPtr hWnd, StringBuilder pszFilename, int cchFilenameMax, out int pnIconIndex);
         }
 
-        private const int MAX_PATH = 260;
+        private const int MaxPath = 260;
 
         [DefaultValue(default(string))]
         public string FileName
@@ -35,18 +35,14 @@ namespace Change_Icon
 
         protected override bool RunDialog(IntPtr hwndOwner)
         {
-            var buf = new StringBuilder(FileName, MAX_PATH);
+            var buf = new StringBuilder(FileName, MaxPath);
             int index;
 
-            bool ok = NativeMethods.SHPickIconDialog(hwndOwner, buf, MAX_PATH, out index);
-            if (ok)
-            {
-                FileName = Environment.ExpandEnvironmentVariables(buf.ToString());
-                IconIndex = index;
-                return ok;
-            }
-
-            return false;
+            var ok = NativeMethods.SHPickIconDialog(hwndOwner, buf, MaxPath, out index);
+            if (!ok) return false;
+            FileName = Environment.ExpandEnvironmentVariables(buf.ToString());
+            IconIndex = index;
+            return true;
         }
 
         public override void Reset()

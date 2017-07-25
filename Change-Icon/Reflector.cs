@@ -66,8 +66,9 @@ namespace Change_Icon
 			if (names.Length > 0)
 				type = m_asmb.GetType(m_ns + "." + names[0]);
 
-			for (var i = 1; i < names.Length; ++i) {
-				type = type.GetNestedType(names[i], BindingFlags.NonPublic);
+			for (var i = 1; i < names.Length; ++i)
+			{
+			    if (type != null) type = type.GetNestedType(names[i], BindingFlags.NonPublic);
 			}
 			return type;
 		}
@@ -86,7 +87,11 @@ namespace Change_Icon
 			foreach (var ci in ctorInfos) {
 				try {
 					return ci.Invoke(parameters);
-				} catch { }
+				}
+			    catch (Exception)
+			    {
+			        // ignored
+			    }
 			}
 
 			return null;
@@ -162,7 +167,8 @@ namespace Change_Icon
 		/// <returns>The property value</returns>
 		public object GetAs(Type type, object obj, string prop) {
 			var propInfo = type.GetProperty(prop, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-			return propInfo.GetValue(obj, null);
+		    if (propInfo == null) throw new ArgumentNullException(nameof(propInfo));
+		    return propInfo.GetValue(obj, null);
 		}
 
 		/// <summary>
