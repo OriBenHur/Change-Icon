@@ -25,7 +25,6 @@ namespace Change_Icon
     public class FolderIcon
     {
         private string _folderPath = "";
-        private string _iniPath = "";
 
         /// <summary>
         /// Creates new FolderIcon object with the path to the target folder.
@@ -46,7 +45,7 @@ namespace Change_Icon
             if (!CreateFolder()) return;
             CreateDesktopIniFile(iconFilePath);
             SetIniFileAttributes();
-            SetFolderAttributes();
+            //SetFolderAttributes();
         }
 
 
@@ -63,9 +62,9 @@ namespace Change_Icon
 
 
         /// <summary>FolderPath</summary>
-        public string FolderPath
+        private string FolderPath
         {
-            get { return _folderPath; }
+            get => _folderPath;
             set
             {
                 _folderPath = value;
@@ -80,11 +79,7 @@ namespace Change_Icon
         /// <summary>
         /// INI Path and Filename
         /// </summary>
-        public string IniPath
-        {
-            get { return _iniPath; }
-            set { _iniPath = value; }
-        }
+        private string IniPath { get; set; } = "";
 
 
         /// <summary>CreateFolder creates a directory if it does not currently exist.</summary>

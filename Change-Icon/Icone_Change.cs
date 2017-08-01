@@ -131,24 +131,24 @@ namespace Change_Icon
                     break;
                 default:
                     Icone_textBox.Text = "";
-                    Size = new Size(378, 272);
                     pictureBox1.Location = new Point(50, 103);
                     Reset_Folder.Location = new Point(193, 208);
                     Set.Location = new Point(275, 208);
+                    Size = new Size(378, 272);
+                    Movie_radioButton.Visible = false;
+                    TV_radioButton.Visible = false;
                     Movie_radioButton.CheckedChanged -= Movie_radioButton_CheckedChanged;
                     Movie_radioButton.Checked = false;
                     Movie_radioButton.CheckedChanged += Movie_radioButton_CheckedChanged;
                     TV_radioButton.CheckedChanged -= TV_radioButton_CheckedChanged;
                     TV_radioButton.Checked = false;
                     TV_radioButton.CheckedChanged += TV_radioButton_CheckedChanged;
-                    Movie_radioButton.Visible = false;
-                    TV_radioButton.Visible = false;
                     pictureBox1.Visible = true;
 
                     var myIcon = new OpenFileDialog
                     {
                         Filter =
-                            @"Icon files (*.ico)| *.ico|Common image files (*.jpg, *.jpeg, *.png, *.bmp)|*.jpg; *.jpeg; *.png; *.bmp|Resource Files (*.dll, *.exe)|*.dll; *.exe",
+                            @"All Supported Types| *.ico; *.jpg; *.jpeg; *.png; *.bmp; *.dll; *.exe|Icon files (*.ico)| *.ico|Common image files (*.jpg, *.jpeg, *.png, *.bmp)|*.jpg; *.jpeg; *.png; *.bmp|Resource Files (*.dll, *.exe)|*.dll; *.exe",
                         FilterIndex = 1,
                         RestoreDirectory = false
                     };
@@ -197,6 +197,7 @@ namespace Change_Icon
                         pictureBox1.Location = new Point(50, 116);
                         Reset_Folder.Location = new Point(193, 221);
                         Set.Location = new Point(275, 221);
+                        Set.Enabled = false;
                         Movie_radioButton.CheckedChanged -= Movie_radioButton_CheckedChanged;
                         Movie_radioButton.Checked = false;
                         Movie_radioButton.CheckedChanged += Movie_radioButton_CheckedChanged;
@@ -386,9 +387,6 @@ namespace Change_Icon
 
                     SHGetSetFolderCustomSettings(ref folderSettings, Folder_textBox.Text, fcsForcewrite);
                     Process.Start("ie4uinit.exe", "-show");
-
-
-                    //ShellNotification.refreshThumbnail(Folder_textBox.Text);
                     MessageBox.Show(@"Done", @"OK");
                     Folder_textBox.Text = "";
                     Icone_textBox.Text = "";
@@ -488,6 +486,7 @@ namespace Change_Icon
 
         private void TV_radioButton_CheckedChanged(object sender, EventArgs e)
         {
+            if (!TV_radioButton.Checked) return;
             var found = false;
             pictureBox1.Visible = true;
             pictureBox1.Image = Properties.Resources.loading;
@@ -501,12 +500,13 @@ namespace Change_Icon
                 TV_radioButton.CheckedChanged -= TV_radioButton_CheckedChanged;
                 TV_radioButton.Checked = false;
                 TV_radioButton.CheckedChanged += TV_radioButton_CheckedChanged;
+                return;
 
             }
             foreach (var video in results.Results)
             {
-                if (!FullMatch(video.Name.ToLower(), original.ToLower())) continue;
-                IMDB_backgroundWorker.RunWorkerAsync(video.PosterPath);
+                if (!FullMatch(video.Name.ToLower(), iconName.ToLower())) continue;
+                IMDB_backgroundWorker.RunWorkerAsync(new List<string> { video.PosterPath, iconName });
                 found = true;
                 break;
             }
@@ -521,6 +521,7 @@ namespace Change_Icon
 
         private void Movie_radioButton_CheckedChanged(object sender, EventArgs e)
         {
+            if (!Movie_radioButton.Checked) return;
             var found = false;
             pictureBox1.Visible = true;
             pictureBox1.Image = Properties.Resources.loading;
@@ -539,25 +540,27 @@ namespace Change_Icon
             }
             foreach (var video in results.Results)
             {
-                if (!FullMatch(video.Title.ToLower(), original.ToLower())) continue;
-                IMDB_backgroundWorker.RunWorkerAsync(video.PosterPath);
+
+                if (!FullMatch(video.Title.ToLower(), iconName.ToLower())) continue;
+                IMDB_backgroundWorker.RunWorkerAsync(new List<string> { video.PosterPath, iconName });
                 found = true;
                 break;
             }
 
             if (found) return;
-            MessageBox.Show(@"Couldn't Find The Requested Artwork", @"Sorry");
             pictureBox1.Image = null;
-            TV_radioButton.CheckedChanged -= TV_radioButton_CheckedChanged;
-            TV_radioButton.Checked = false;
-            TV_radioButton.CheckedChanged += TV_radioButton_CheckedChanged;
+            MessageBox.Show(@"Couldn't Find The Requested Artwork", @"Sorry");
+            Movie_radioButton.CheckedChanged -= Movie_radioButton_CheckedChanged;
+            Movie_radioButton.Checked = false;
+            Movie_radioButton.CheckedChanged += Movie_radioButton_CheckedChanged;
         }
 
-        private static bool FullMatch(string videoTitle, string original)
+        private static bool FullMatch(string videoTitle, string iconName)
         {
-            if (videoTitle.Length > original.Length) return false;
+            videoTitle = videoTitle.Replace("'", string.Empty);
+            if (videoTitle.Length > iconName.Length) return false;
             var strArray1 = Regex.Split(videoTitle, "[^a-zA-Z0-9]+");
-            var strArray2 = Regex.Split(original, "[^a-zA-Z0-9]+");
+            var strArray2 = Regex.Split(iconName, "[^a-zA-Z0-9]+");
             var num1 = Math.Max(strArray1.Length, strArray2.Length);
             var num2 = 0.0;
             foreach (var t in strArray1)
@@ -617,156 +620,159 @@ namespace Change_Icon
 
         private void IMDB_backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            var original = Icone_textBox.Text.Replace(_year.ToString(), string.Empty).Trim('.').Trim();
-            var iconName = CleanString(original.Trim());
-            var iconPath = $@"{Folder_textBox.Text}\{CleanString(iconName, false)}.jpg";
-            if (Exists(iconPath)) Delete(iconPath);
-            using (var client = new WebClient())
+            var args = e.Argument as List<string>;
+            if (args != null)
             {
-                client.DownloadFile(BaseUrl + e.Argument, iconPath);
+                var iconPath = $@"{Folder_textBox.Text}\{CleanString(args[1], false)}.jpg";
+                if (Exists(iconPath)) Delete(iconPath);
+                using (var client = new WebClient())
+                {
+                    try
+                    {
+                        client.DownloadFile(BaseUrl + args[0], iconPath);
+                    }
+                    catch
+                    {
+                        pictureBox1.Image = null;
+                        MessageBox.Show(@"Couldn't Find The Requested Artwork", @"Sorry");
+                        Movie_radioButton.CheckedChanged -= Movie_radioButton_CheckedChanged;
+                        Movie_radioButton.Invoke(new MethodInvoker(delegate { Movie_radioButton.Checked = false; }));
+                        Movie_radioButton.CheckedChanged += Movie_radioButton_CheckedChanged;
+                        TV_radioButton.CheckedChanged -= TV_radioButton_CheckedChanged;
+                        TV_radioButton.Invoke(new MethodInvoker(delegate { TV_radioButton.Checked = false; }));
+                        TV_radioButton.CheckedChanged += TV_radioButton_CheckedChanged;
+                        return;
+                    }
+                }
+                SetAttributes(iconPath, GetAttributes(iconPath) | FileAttributes.Hidden);
+                if (!Pics.Contains(iconPath)) Pics.Add(iconPath);
+                ProcessItem(iconPath);
+                if (Icone_textBox.InvokeRequired)
+                {
+                    Icone_textBox.Invoke(new MethodInvoker(delegate { Icone_textBox.Text = iconPath; }));
+                }
             }
-            SetAttributes(iconPath, GetAttributes(iconPath) | FileAttributes.Hidden);
-            if (!Pics.Contains(iconPath)) Pics.Add(iconPath);
-            ProcessItem(iconPath);
-            if (Icone_textBox.InvokeRequired)
-            {
-                Icone_textBox.Invoke(new MethodInvoker(delegate { Icone_textBox.Text = iconPath; }));
-            }
+            Set.Invoke(new MethodInvoker(delegate { Set.Enabled = true; }));
         }
 
         private void Local_backgroundWorker_DoWork(object sender, DoWorkEventArgs e)
         {
-            var filename = e.Argument.ToString();
+            var filename = e.Argument as string;
             var icofile = GetTempPath() + ChangeExtension(GetFileName(filename), "png");
             Icone_textBox.Invoke(new MethodInvoker(delegate { Icone_textBox.Text = filename; }));
             var file = GetFileNameWithoutExtension(e.Argument.ToString());
             var dir = GetDirectoryName(filename);
             var extension = GetExtension(filename);
+
+            var name = $@"{dir}\{file + _mRnd}{extension}";
+            var viewer = new Viewer(name);
+            var destfile = ChangeExtension(icofile, GetExtension(filename));
+            if (extension == null) return;
+            extension = extension.ToLower();
+            if (extension.Equals(".jpg") || extension.Equals(".jpeg") || extension.Equals(".png") || extension.Equals(".bmp"))
             {
-                var name = $@"{dir}\{file + _mRnd}{extension}";
-                var viewer = new Viewer(name);
-                var destfile = ChangeExtension(icofile, GetExtension(filename));
-                extension = extension.ToLower();
-                if (extension.Equals(".jpg") || extension.Equals(".jpeg") || extension.Equals(".png") || extension.Equals(".bmp"))
+                try
                 {
+                    if (Exists(destfile))
+                    {
+                        SetAttributes(destfile, FileAttributes.Normal);
+                        Delete(destfile);
+                    }
+                    Copy(filename, destfile, true);
+                    SetAttributes(destfile, FileAttributes.Normal);
+
+                    if (!IconConvert.ConvertToIcon(destfile, ChangeExtension(destfile, "ico"))) Dispose();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+            }
+            else if (extension.Equals(".dll") || extension.Equals(".exe"))
+            {
+                var iconPick = new IconPickerDialog { FileName = filename };
+                var ico = iconPick.ShowDialog(this);
+                if (ico == DialogResult.OK)
+                {
+                    var fileName = iconPick.FileName;
+                    var index = iconPick.IconIndex;
+
+                    Icon icon;
+                    Icon[] splitIcons;
                     try
                     {
-                        if (Exists(destfile))
-                        {
-                            SetAttributes(destfile, FileAttributes.Normal);
-                            Delete(destfile);
-                        }
-                        Copy(filename, destfile, true);
-                        SetAttributes(destfile, FileAttributes.Normal);
-
-                        if (!IconConvert.ConvertToIcon(destfile, ChangeExtension(destfile, "ico"))) Dispose();
+                        var extractor = new IconExtractor(fileName);
+                        icon = extractor.GetIcon(index);
+                        splitIcons = IconUtil.Split(icon);
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show(ex.Message);
+                        MessageBox.Show(ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
                     }
-                }
-                else if (extension.Equals(".dll") || extension.Equals(".exe"))
-                {
-                    var iconPick = new IconPickerDialog { FileName = filename };
-                    var ico = iconPick.ShowDialog(this);
-                    if (ico == DialogResult.OK)
+
+                    Icone_textBox.Text = string.Format(fileName);
+
+                    // Update icons.
+
+                    icon.Dispose();
+
+                    var viewerList = viewer.list;
+                    viewerList.BeginUpdate();
+                    foreach (var i in splitIcons)
                     {
-                        var fileName = iconPick.FileName;
-                        var index = iconPick.IconIndex;
+                        var item = new Viewer.IconListViewItem();
+                        var size = i.Size;
+                        var bits = IconUtil.GetBitCount(i);
 
-                        Icon icon;
-                        Icon[] splitIcons;
-                        try
-                        {
-                            var extractor = new IconExtractor(fileName);
-                            icon = extractor.GetIcon(index);
-                            splitIcons = IconUtil.Split(icon);
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show(ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                            return;
-                        }
-
-                        Icone_textBox.Text = string.Format(fileName);
-
-                        // Update icons.
-
-                        icon.Dispose();
-
-                        var viewerList = viewer.list;
-                        viewerList.BeginUpdate();
-                        foreach (var i in splitIcons)
-                        {
-                            var item = new Viewer.IconListViewItem();
-                            var size = i.Size;
-                            var bits = IconUtil.GetBitCount(i);
-
-                            item.ToolTipText = $"{size.Width}x{size.Height}, {bits} bits";
-                            item.Bitmap = IconUtil.ToBitmap(i);
-                            i.Dispose();
-                            viewerList.Items.Add(item);
-                        }
-                        viewer.ShowDialog();
-                        var exit = viewer.Exit;
-                        viewerList.EndUpdate();
-                        if (!exit)
-                        {
-                            destfile = GetTempPath() + GetFileName(ChangeExtension(name, @"png"));
-                            if (!IconConvert.ConvertToIcon(destfile, ChangeExtension(destfile, "ico")))
-                                Dispose();
-                        }
-
-                        else
-                        {
-                            //Folder_textBox.Text = "";
-                            Icone_textBox.Text = "";
-                            if (pictureBox1.Image == null) return;
-                            pictureBox1.Image.Dispose();
-                            pictureBox1.Image = null;
-                        }
-
+                        item.ToolTipText = $"{size.Width}x{size.Height}, {bits} bits";
+                        item.Bitmap = IconUtil.ToBitmap(i);
+                        i.Dispose();
+                        viewerList.Items.Add(item);
                     }
-                }
-
-                if (Exists(destfile))
-                {
-                    if (!Pics.Contains(destfile)) Pics.Add(destfile);
-                    if (!Pics.Contains(ChangeExtension(destfile, "ico"))) Pics.Add(ChangeExtension(destfile, "ico"));
-                    if (!Pics.Contains(ChangeExtension(destfile, "png"))) Pics.Add(ChangeExtension(destfile, "png"));
-                    using (var temp = new Bitmap(destfile))
-                        pictureBox1.Image = new Bitmap(temp);
-                }
-
-                else
-                {
-                    if (!extension.Equals(".dll"))
+                    viewer.ShowDialog();
+                    var exit = viewer.Exit;
+                    viewerList.EndUpdate();
+                    if (!exit)
                     {
-                        destfile = filename;
-                        var img = Image.FromFile(destfile);
-                        pictureBox1.Image = img;
+                        destfile = GetTempPath() + GetFileName(ChangeExtension(name, @"png"));
+                        if (!IconConvert.ConvertToIcon(destfile, ChangeExtension(destfile, "ico")))
+                            Dispose();
                     }
-                    else Icone_textBox.Text = "";
-                }
-            }
-        }
 
-        private void Icon_Change_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            //general cleanup
-            try
-            {
-                GC.SuppressFinalize(this);
-                foreach (var pic in Pics)
-                {
-                    if (Exists(pic)) Delete(pic);
+                    else
+                    {
+                        //Folder_textBox.Text = "";
+                        Icone_textBox.Text = "";
+                        if (pictureBox1.Image == null) return;
+                        pictureBox1.Image.Dispose();
+                        pictureBox1.Image = null;
+                    }
+
                 }
             }
-            catch (Exception exp)
+
+            if (Exists(destfile))
             {
-                MessageBox.Show(exp.Message);
+                if (!Pics.Contains(destfile)) Pics.Add(destfile);
+                if (!Pics.Contains(ChangeExtension(destfile, "ico"))) Pics.Add(ChangeExtension(destfile, "ico"));
+                if (!Pics.Contains(ChangeExtension(destfile, "png"))) Pics.Add(ChangeExtension(destfile, "png"));
+                using (var temp = new Bitmap(destfile))
+                    pictureBox1.Image = new Bitmap(temp);
             }
+
+            else
+            {
+                if (!extension.Equals(".dll"))
+                {
+                    destfile = filename;
+                    var img = Image.FromFile(destfile);
+                    pictureBox1.Image = img;
+                }
+                else Icone_textBox.Text = "";
+            }
+            if (Icone_textBox.Text != "")
+                Set.Invoke(new MethodInvoker(delegate { Set.Enabled = true; }));
         }
 
         private void CeckUpdate_DoWork(object sender, DoWorkEventArgs e)
@@ -816,6 +822,23 @@ namespace Change_Icon
                     if ((bool)e.Argument)
                         MessageBox.Show(@"You Are Running The Last Version.", @"No New Updates");
                 }
+            }
+        }
+
+        private void Icon_Change_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            //general cleanup
+            try
+            {
+                GC.SuppressFinalize(this);
+                foreach (var pic in Pics)
+                {
+                    if (Exists(pic)) Delete(pic);
+                }
+            }
+            catch (Exception exp)
+            {
+                MessageBox.Show(exp.Message);
             }
         }
     }
