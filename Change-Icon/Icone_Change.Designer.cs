@@ -44,19 +44,20 @@ namespace Change_Icon
             this.Reset_Folder = new System.Windows.Forms.Button();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.technicalDetailsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.checkForUpdatesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.imdb_button = new System.Windows.Forms.Button();
             this.Movie_radioButton = new System.Windows.Forms.RadioButton();
             this.TV_radioButton = new System.Windows.Forms.RadioButton();
-            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.IMDB_backgroundWorker = new System.ComponentModel.BackgroundWorker();
             this.Local_backgroundWorker = new System.ComponentModel.BackgroundWorker();
             this.CeckUpdate = new System.ComponentModel.BackgroundWorker();
             this.Info = new System.Windows.Forms.ErrorProvider(this.components);
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             ((System.ComponentModel.ISupportInitialize)(this.Folder_Error)).BeginInit();
             this.menuStrip1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.Info)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // Folder_textBox
@@ -149,10 +150,18 @@ namespace Change_Icon
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.technicalDetailsToolStripMenuItem,
             this.checkForUpdatesToolStripMenuItem});
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
             this.aboutToolStripMenuItem.Size = new System.Drawing.Size(52, 20);
             this.aboutToolStripMenuItem.Text = "About";
+            // 
+            // technicalDetailsToolStripMenuItem
+            // 
+            this.technicalDetailsToolStripMenuItem.Name = "technicalDetailsToolStripMenuItem";
+            this.technicalDetailsToolStripMenuItem.Size = new System.Drawing.Size(173, 22);
+            this.technicalDetailsToolStripMenuItem.Text = "Technical Details";
+            this.technicalDetailsToolStripMenuItem.Click += new System.EventHandler(this.technicalDetailsToolStripMenuItem_Click);
             // 
             // checkForUpdatesToolStripMenuItem
             // 
@@ -197,16 +206,6 @@ namespace Change_Icon
             this.TV_radioButton.Visible = false;
             this.TV_radioButton.CheckedChanged += new System.EventHandler(this.TV_radioButton_CheckedChanged);
             // 
-            // pictureBox1
-            // 
-            this.pictureBox1.Location = new System.Drawing.Point(50, 103);
-            this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(128, 128);
-            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
-            this.pictureBox1.TabIndex = 8;
-            this.pictureBox1.TabStop = false;
-            this.pictureBox1.Visible = false;
-            // 
             // IMDB_backgroundWorker
             // 
             this.IMDB_backgroundWorker.DoWork += new System.ComponentModel.DoWorkEventHandler(this.IMDB_backgroundWorker_DoWork);
@@ -224,10 +223,19 @@ namespace Change_Icon
             this.Info.ContainerControl = this;
             this.Info.Icon = ((System.Drawing.Icon)(resources.GetObject("Info.Icon")));
             // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Location = new System.Drawing.Point(50, 103);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(128, 128);
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
+            this.pictureBox1.TabIndex = 8;
+            this.pictureBox1.TabStop = false;
+            this.pictureBox1.Visible = false;
+            // 
             // IconChange
             // 
             this.AccessibleRole = System.Windows.Forms.AccessibleRole.Window;
-            this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(368, 239);
@@ -255,8 +263,8 @@ namespace Change_Icon
             ((System.ComponentModel.ISupportInitialize)(this.Folder_Error)).EndInit();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.Info)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -284,6 +292,7 @@ namespace Change_Icon
         private BackgroundWorker Local_backgroundWorker;
         private BackgroundWorker CeckUpdate;
         private ErrorProvider Info;
+        private ToolStripMenuItem technicalDetailsToolStripMenuItem;
     }
 }
 

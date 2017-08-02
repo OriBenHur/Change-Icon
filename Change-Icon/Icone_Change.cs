@@ -6,6 +6,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
@@ -19,10 +20,13 @@ namespace Change_Icon
 {
     public partial class IconChange : Form
     {
+        [DllImport("user32.dll", ExactSpelling = true, CharSet = CharSet.Auto)]
+        public static extern IntPtr GetParent(IntPtr hWnd);
+
         public IconChange()
         {
             InitializeComponent();
-
+  
         }
 
         #region Old Check For Update Method
@@ -107,8 +111,7 @@ namespace Change_Icon
             TV_radioButton.Visible = false;
             pictureBox1.Visible = true;
             var folder = new FolderSelectDialog();
-
-            var result = folder.ShowDialog();
+            var result = folder.ShowDialog(Handle);
             if (result)
             {
                 Folder_textBox.Text = folder.FileName;
@@ -116,8 +119,8 @@ namespace Change_Icon
         }
 
 
-        private static readonly Random Rnd = new Random();
-        private readonly int _mRnd = Rnd.Next(1, 1000);
+        //private static readonly Random Rnd = new Random();
+        //private readonly int _mRnd = Rnd.Next(1, 1000);
 
         private void Icon_button_Click(object sender, EventArgs e)
         {
@@ -215,7 +218,7 @@ namespace Change_Icon
 
         private void GetYear(string video)
         {
-            var match = Regex.Match(video, @"(19|20)[0-9][0-9]");
+            var match = Regex.Match(video, @"(19|20)[0-9]{2}");
             _year = match.Success ? int.Parse(match.Value) : 0;
 
         }
@@ -223,7 +226,7 @@ namespace Change_Icon
         private static string ExtractvideoName(string videoName)
         {
             var tmpName = "";
-            var yearMatche = Regex.Match(videoName.ToLower(), ".(19|20)[0-9][0-9]");
+            var yearMatche = Regex.Match(videoName.ToLower(), ".(19|20)[0-9]{2}");
             if (yearMatche.Success) return videoName.Substring(0, videoName.IndexOf(yearMatche.Value, StringComparison.Ordinal));
             var sEmatch = Regex.Match(videoName, ".[sS][0-9]{2}[eE][0-9]{2}");
             if (sEmatch.Success) return videoName.Substring(0, videoName.IndexOf(sEmatch.Value, StringComparison.Ordinal));
@@ -297,8 +300,8 @@ namespace Change_Icon
             }
             else
             {
-                if (!Directory.Exists(Folder_textBox.Text)) MessageBox.Show(@"Invalid Folder Path", @"Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                else if (!Exists(Icone_textBox.Text)) MessageBox.Show(@"Invalid Icon Path", @"Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                if (!Directory.Exists(Folder_textBox.Text)) MessageBox.Show(this, @"Invalid Folder Path", @"Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                else if (!Exists(Icone_textBox.Text)) MessageBox.Show(this, @"Invalid Icon Path", @"Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 else
                 {
                     var filePaths = Directory.GetFiles(Folder_textBox.Text);
@@ -359,7 +362,8 @@ namespace Change_Icon
                         var extension = GetExtension(Icone_textBox.Text);
                         var file = GetFileNameWithoutExtension(Icone_textBox.Text);
                         var tempPath = GetTempPath();
-                        var tmpSource = ChangeExtension($@"{tempPath}{file + _mRnd}{extension}", "ico");
+                        //var tmpSource = ChangeExtension($@"{tempPath}{file + _mRnd}{extension}", "ico");
+                        var tmpSource = ChangeExtension($@"{tempPath}{file}{extension}", "ico");
                         var tmpSource2 = GetTempPath() + ChangeExtension(GetFileName(Icone_textBox.Text), "ico");
                         string sourceFile;
                         if (Exists(tmpSource)) sourceFile = tmpSource;
@@ -386,8 +390,8 @@ namespace Change_Icon
                     };
 
                     SHGetSetFolderCustomSettings(ref folderSettings, Folder_textBox.Text, fcsForcewrite);
-                    Process.Start("ie4uinit.exe", "-show");
-                    MessageBox.Show(@"Done", @"OK");
+                    Process.Start(@"C:\Windows\System32\ie4uinit.exe", @"-show");
+                    MessageBox.Show(this, @"Done", @"OK");
                     Folder_textBox.Text = "";
                     Icone_textBox.Text = "";
                     Size = new Size(388, 282);
@@ -466,9 +470,9 @@ namespace Change_Icon
                 }
                 if (find)
                 {
-                    MessageBox.Show(@"Folder reset to default", @"Done");
+                    MessageBox.Show(this, @"Folder reset to default", @"Done");
                 }
-                else MessageBox.Show(@"Folder is already at default", @"Nothing To Do");
+                else MessageBox.Show(this, @"Folder is already at default", @"Nothing To Do");
             }
         }
 
@@ -495,7 +499,7 @@ namespace Change_Icon
             var results = Tmdb.SearchTvShowAsync(iconName).Result;
             if (results.TotalResults < 1)
             {
-                MessageBox.Show(@"Couldn't Find The Requested Artwork", @"Sorry");
+                MessageBox.Show(this, @"Couldn't Find The Requested Artwork", @"Sorry");
                 pictureBox1.Image = null;
                 TV_radioButton.CheckedChanged -= TV_radioButton_CheckedChanged;
                 TV_radioButton.Checked = false;
@@ -512,7 +516,7 @@ namespace Change_Icon
             }
 
             if (found) return;
-            MessageBox.Show(@"Couldn't Find The Requested Artwork", @"Sorry");
+            MessageBox.Show(this, @"Couldn't Find The Requested Artwork", @"Sorry");
             pictureBox1.Image = null;
             TV_radioButton.CheckedChanged -= TV_radioButton_CheckedChanged;
             TV_radioButton.Checked = false;
@@ -530,7 +534,7 @@ namespace Change_Icon
             var results = Tmdb.SearchMovieAsync(iconName, 0, false, _year).Result;
             if (results.TotalResults < 1)
             {
-                MessageBox.Show(@"Couldn't Find The Requested Artwork", @"Sorry");
+                MessageBox.Show(this, @"Couldn't Find The Requested Artwork", @"Sorry");
                 pictureBox1.Image = null;
                 Movie_radioButton.CheckedChanged -= Movie_radioButton_CheckedChanged;
                 Movie_radioButton.Checked = false;
@@ -549,7 +553,7 @@ namespace Change_Icon
 
             if (found) return;
             pictureBox1.Image = null;
-            MessageBox.Show(@"Couldn't Find The Requested Artwork", @"Sorry");
+            MessageBox.Show(this, @"Couldn't Find The Requested Artwork", @"Sorry");
             Movie_radioButton.CheckedChanged -= Movie_radioButton_CheckedChanged;
             Movie_radioButton.Checked = false;
             Movie_radioButton.CheckedChanged += Movie_radioButton_CheckedChanged;
@@ -594,7 +598,7 @@ namespace Change_Icon
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    MessageBox.Show(this, ex.Message);
                 }
             }
 
@@ -634,7 +638,10 @@ namespace Change_Icon
                     catch
                     {
                         pictureBox1.Image = null;
-                        MessageBox.Show(@"Couldn't Find The Requested Artwork", @"Sorry");
+                        Invoke(new MethodInvoker(delegate
+                        {
+                            MessageBox.Show(this, @"Couldn't Find The Requested Artwork", @"Sorry");
+                        }));
                         Movie_radioButton.CheckedChanged -= Movie_radioButton_CheckedChanged;
                         Movie_radioButton.Invoke(new MethodInvoker(delegate { Movie_radioButton.Checked = false; }));
                         Movie_radioButton.CheckedChanged += Movie_radioButton_CheckedChanged;
@@ -664,7 +671,8 @@ namespace Change_Icon
             var dir = GetDirectoryName(filename);
             var extension = GetExtension(filename);
 
-            var name = $@"{dir}\{file + _mRnd}{extension}";
+            //var name = $@"{dir}\{file + _mRnd}{extension}";
+            var name = $@"{dir}\{file}{extension}";
             var viewer = new Viewer(name);
             var destfile = ChangeExtension(icofile, GetExtension(filename));
             if (extension == null) return;
@@ -685,13 +693,17 @@ namespace Change_Icon
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    Invoke(new MethodInvoker(delegate { MessageBox.Show(this, ex.Message); }));
                 }
             }
             else if (extension.Equals(".dll") || extension.Equals(".exe"))
             {
+                var ico = DialogResult.None;
                 var iconPick = new IconPickerDialog { FileName = filename };
-                var ico = iconPick.ShowDialog(this);
+                Invoke(new MethodInvoker(delegate
+                {
+                    ico = iconPick.ShowDialog(this);
+                }));
                 if (ico == DialogResult.OK)
                 {
                     var fileName = iconPick.FileName;
@@ -707,7 +719,7 @@ namespace Change_Icon
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show(ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show(this, ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
 
@@ -774,7 +786,6 @@ namespace Change_Icon
             if (Icone_textBox.Text != "")
                 Set.Invoke(new MethodInvoker(delegate { Set.Enabled = true; }));
         }
-
         private void CeckUpdate_DoWork(object sender, DoWorkEventArgs e)
         {
 
@@ -783,9 +794,9 @@ namespace Change_Icon
                 Version newVersion = null;
                 XElement change = null;
                 const string xmlUrl = @"https://oribenhur.github.io/update.xml";
-                var appVersion = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-                var appName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
-
+                var appVersion = Assembly.GetExecutingAssembly().GetName().Version;
+                var appName = Assembly.GetExecutingAssembly().GetName().Name.Replace(" ", "_");
+                //var UpdadeMessageBox = new UpdateMessageBox();
                 try
                 {
                     var doc = XDocument.Load(xmlUrl);
@@ -803,24 +814,38 @@ namespace Change_Icon
                 }
                 catch (Exception exception)
                 {
-                    MessageBox.Show(exception.Message);
+                    Invoke(new MethodInvoker(delegate { MessageBox.Show(this, exception.Message); }));
                 }
 
                 if (appVersion.CompareTo(newVersion) < 0)
                 {
+
                     //Debug.Assert(change != null, "change != null");
-                    if (change == null) return;
-                    change.Value = change.Value;
-                    var result = MessageBox.Show(
-                        $@"{appName.Replace('_', ' ')} v.{newVersion} is out!{Environment.NewLine}{change.Value}",
-                        @"New Version is avlibale", MessageBoxButtons.YesNo);
+                    var result = DialogResult.None;
+                    Invoke(new MethodInvoker(delegate
+                    {
+                        if (change != null)
+                            result = MessageBox.Show(this,
+                                $@"{appName.Replace('_', ' ')} v.{newVersion} is out!{Environment.NewLine}{
+                                        change.Value
+                                    }",
+                                @"New Version is avlibale", MessageBoxButtons.YesNo);
+                    }));
+
                     if (result == DialogResult.Yes)
                         Process.Start(downloadUrl);
+
                 }
                 else
                 {
-                    if ((bool)e.Argument)
-                        MessageBox.Show(@"You Are Running The Last Version.", @"No New Updates");
+                    if ((bool) e.Argument)
+
+                        Invoke(new MethodInvoker(delegate
+                        {
+                            MessageBox.Show(this, @"You Are Running The Last Version.", @"No New Updates");
+                        }));
+
+
                 }
             }
         }
@@ -838,8 +863,17 @@ namespace Change_Icon
             }
             catch (Exception exp)
             {
-                MessageBox.Show(exp.Message);
+                MessageBox.Show(this, exp.Message);
             }
+        }
+
+        private void technicalDetailsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var appVersion = Assembly.GetExecutingAssembly().GetName().Version;
+            var appName = Assembly.GetExecutingAssembly().GetName().Name;
+            var buildDate = GetLastWriteTime(Assembly.GetExecutingAssembly().Location).ToLocalTime();
+            var td = new Technical_Details(appName, appVersion.ToString(), $@"{buildDate.ToShortDateString()} - {buildDate.ToShortTimeString()}");
+            td.ShowDialog(this);
         }
     }
 }
